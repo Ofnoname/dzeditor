@@ -1,0 +1,24 @@
+{
+  "name": "dzeditor",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@icon-park/vue-next": "^1.4.2",
+    "marked": "^5.1.1",
+    "pinia": "^2.1.4",
+    "split.js": "^1.6.5",
+    "vue": "^3.2.45",
+    "vue-router": "^4.2.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.0.0",
+    "sass": "^1.63.6",
+    "vite": "^4.1.0"
+  }
+}
