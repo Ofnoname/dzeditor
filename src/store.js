@@ -1,5 +1,18 @@
 import { defineStore } from 'pinia'
 
+// 持久化 pinia
+export function saveState(key, state) {
+    localStorage.setItem(key, JSON.stringify(state));
+}
+
+export function loadState(key) {
+    try {
+        return JSON.parse(localStorage.getItem(key));
+    } catch (err) {
+        return undefined; // 当不存在状态或者状态不合法时，返回`undefined`
+    }
+}
+
 class textFile {
     constructor(sign) {
         this.sign = sign
@@ -13,6 +26,7 @@ export const useFileStore = defineStore('file',{
         currentFile: null,
         increment: 1000,
         fileList: [],
+        ...loadState('file'),
     }),
     actions: {
         newFile() {

@@ -7,6 +7,7 @@ import '@icon-park/vue-next/styles/index.css';
 
 import App from './App.vue'
 import Editor from "./components/Editor.vue";
+import {saveState, useFileStore} from "./store.js";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -21,3 +22,8 @@ install(app)
 app.use(createPinia())
 .use(router)
 .mount('#app')
+
+const fileStore = useFileStore()
+fileStore.$subscribe((mutation, state) => {
+    saveState('file', state)
+})
