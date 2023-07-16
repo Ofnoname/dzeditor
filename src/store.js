@@ -1,31 +1,34 @@
 import { defineStore } from 'pinia'
 
-function emptyFile(id) {
-    return {
-        id: id,
-        title: '未命名',
-        content: '',
+class textFile {
+    constructor(sign) {
+        this.sign = sign
+        this.title = '未命名'
+        this.content = ''
     }
 }
-export const useFileStore = defineStore({
-    id: 'file',
+
+export const useFileStore = defineStore('file',{
     state: () => ({
         currentFile: null,
-        increment: 0,
+        increment: 1000,
         fileList: [],
     }),
     actions: {
         newFile() {
-            const newFile = emptyFile(++this.increment)
+            const newFile = new textFile(this.increment++)
             this.fileList.push(newFile)
             this.currentFile = newFile
         },
-        removeFile(id) {
-            const index = this.fileList.findIndex(file => file.id === id)
+        switchFile(index) {
+            this.currentFile = this.fileList[index]
+        },
+        removeFile(index) {
             if (this.fileList[index] === this.currentFile) {
                 this.currentFile = this.fileList[index - 1] || this.fileList[index + 1]
             }
             this.fileList.splice(index, 1)
+
             if (this.fileList.length === 0) {
                 this.newFile()
             }
