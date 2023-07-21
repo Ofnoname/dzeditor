@@ -29,28 +29,43 @@
 
 		<div class="vertical-separate-line"></div>
 		<div class="preview-pane" ref="preview" v-html="previewText"></div>
+		<span class="preview-setting" @click="setPreview()">
+			<icon-align-text-left v-if="previewSetting === 0" title="编辑"/>
+			<icon-preview-open v-if="previewSetting === 1" title="预览"/>
+			<icon-contrast-view v-if="previewSetting === 2" title="分屏"/>
+		</span>
 	</div>
 </template>
 
 <script setup>
-import {onMounted, ref, watch} from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
 
-import {useFileStore} from "../store.js";
+import {marked} from "marked";
 
-const fileStore = useFileStore()
+import {useFileStore, useSettingStore} from "../store.js";
+import {storeToRefs} from "pinia";
+
+const fileStore = useFileStore(),
+		settingStore = useSettingStore()
+
+const {previewSetting} = storeToRefs(settingStore)
 
 // 获取DOM元素
 const input = ref(null),
 		preview = ref(null)
 
 // 更新文本
-// const previewText = computed(() => {
-// 		return marked(fileStore.text)
-// })
+const previewText = computed(() => {
+		return marked(fileStore.currentFile?.content)
+})
 
 // 双击重命名，失去焦点和回车时取消编辑
 function setRename(event, val) {
     event.target.setAttribute('contenteditable', val.toString());
+}
+
+function setPreview() {
+		previewSetting.value = (previewSetting.value + 1) % 3
 }
 
 function updateText() {
@@ -88,7 +103,7 @@ onMounted(() => {
 		padding: 1rem;
 		width: 100%;
 		outline: none;
-
+		background-color: red;
 		/* 添加更多的样式来美化你的输入区 */
 	}
 	/* 添加更多的样式来美化你的编辑器 */
@@ -135,5 +150,15 @@ onMounted(() => {
 .preview-pane {
 	width: 800px;
 	/* 添加更多的样式来美化你的预览区 */
+}
+
+.preview-setting{
+	position: fixed;
+	right: 0; top: 0;
+	padding: .4rem .8rem;
+	cursor: pointer;
+	&:hover{
+		background-color: #f8f8f8;
+	}
 }
 </style>
