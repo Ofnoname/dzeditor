@@ -1,8 +1,8 @@
 <!-- 主界面 Editor -->
 <template>
 <!-- 编辑器 -->
-	<div class="editor">
-		<div class="editor-pane">
+	<div class="main">
+		<div class="editor-pane" v-if="previewSetting < 2">
 			<!-- 上栏	-->
 			<div class="file-bar">
 				<div class="title"
@@ -19,20 +19,15 @@
 				</div>
 				<icon-add class="icon-add" @click="fileStore.newFile()" title="新建文件"/>
 			</div>
-			<!-- 输入	-->
-			<div class="input" ref="input" contenteditable
-			     @input="updateText"
-			     @blur="updateText">
-				{{fileStore?.currentFile?.content}}
-			</div>
+			<MonacoEditor v-model:value="currentFile.content" />
 		</div>
 
-		<div class="vertical-separate-line"></div>
-		<div class="preview-pane" ref="preview" v-html="previewText"></div>
-		<span class="preview-setting" @click="setPreview()">
-			<icon-align-text-left v-if="previewSetting === 0" title="编辑"/>
-			<icon-preview-open v-if="previewSetting === 1" title="预览"/>
-			<icon-contrast-view v-if="previewSetting === 2" title="分屏"/>
+		<div class="vertical-separate-line" v-if="previewSetting === 1"></div>
+		<div class="preview-pane" ref="preview" v-html="previewText" v-if="previewSetting > 0"></div>
+		<span class="preview-setting" @click="switchPreview()">
+			<template v-if="previewSetting === 0"><icon-align-text-left/> 编辑</template>
+			<template v-if="previewSetting === 1"><icon-contrast-view/> 分屏</template>
+			<template v-if="previewSetting === 2"><icon-preview-open/> 预览</template>
 		</span>
 	</div>
 </template>
@@ -44,19 +39,23 @@ import {marked} from "marked";
 
 import {useFileStore, useSettingStore} from "../store.js";
 import {storeToRefs} from "pinia";
+import MonacoEditor from "../components/MonacoEditor.vue";
 
 const fileStore = useFileStore(),
 		settingStore = useSettingStore()
 
-const {previewSetting} = storeToRefs(settingStore)
+const {previewSetting} = storeToRefs(settingStore),
+    {currentFile} = storeToRefs(fileStore)
 
 // 获取DOM元素
 const input = ref(null),
 		preview = ref(null)
 
+let str = ref("")
+
 // 更新文本
 const previewText = computed(() => {
-		return marked(fileStore.currentFile?.content)
+		return currentFile.value.content ? marked(currentFile.value.content) : ''
 })
 
 // 双击重命名，失去焦点和回车时取消编辑
@@ -64,18 +63,14 @@ function setRename(event, val) {
     event.target.setAttribute('contenteditable', val.toString());
 }
 
-function setPreview() {
+function switchPreview() {
 		previewSetting.value = (previewSetting.value + 1) % 3
 }
-
-function updateText() {
-    fileStore.currentFile.content = input.value.innerText
-}
-
 function updateTitle(event) {
 		fileStore.currentFile.title = event.target.innerText
 }
 
+// 监听文件名变化, 动态修改网页标题
 watch(() => fileStore.currentFile?.title, () => {
     document.title = fileStore.currentFile?.title + ' - 丁真编辑器'
 })
@@ -84,29 +79,20 @@ onMounted(() => {
     if (fileStore.fileList.length === 0) {
 				fileStore.newFile()
 		}
-		input.value.focus()
 })
 </script>
 
-<style lang="scss">
-.editor{
+<style scoped lang="scss">
+.main{
 	display: flex;
 }
 
 .editor-pane {
 	width: 800px;
 	height: 100vh;
-
-	font-family: Consolas;
-
-	.input {
-		padding: 1rem;
-		width: 100%;
-		outline: none;
-		background-color: red;
-		/* 添加更多的样式来美化你的输入区 */
-	}
-	/* 添加更多的样式来美化你的编辑器 */
+	display: flex;
+	flex-direction: column;
+	flex: 1;
 }
 
 .file-bar {
@@ -148,8 +134,8 @@ onMounted(() => {
 }
 
 .preview-pane {
-	width: 800px;
-	/* 添加更多的样式来美化你的预览区 */
+	padding: 1rem;
+	flex: 1;
 }
 
 .preview-setting{

@@ -6,7 +6,7 @@ import '@icon-park/vue-next/styles/index.css';
 
 
 import App from './App.vue'
-import Editor from "./components/Editor.vue";
+import Editor from "./pages/Editor.vue";
 import {saveState, useFileStore} from "./store.js";
 
 const router = createRouter({
