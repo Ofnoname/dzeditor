@@ -27,6 +27,13 @@ onMounted(() => {
     })
 })
 
+watch(props, (newProps) => {
+    // Update the editor's content whenever props.value changes
+    if (textModel.getValue() !== newProps.value) {
+        textModel.setValue(newProps.value)
+    }
+}, { deep: true })  // Watch object deeply
+
 onBeforeUnmount(() => {
     monacoEditor.dispose()
 })

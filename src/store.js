@@ -52,6 +52,7 @@ export const useFileStore = defineStore('file',{
 
 export const useSettingStore = defineStore('setting', {
     state: () => ({
-      previewSetting: 1, // 0: 编辑，1: 分屏，2: 预览
+        previewSetting: 1, // 0: 编辑，1: 分屏，2: 预览
+        ...loadState('setting'),
     })
 })
