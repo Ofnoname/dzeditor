@@ -18,8 +18,6 @@
 </template>
 
 <script setup>
-// Add the necessary imports and methods here.
-// Note that you may need to change the method names and variables as required.
 import {useFileStore} from "../store.js";
 import {storeToRefs} from "pinia";
 

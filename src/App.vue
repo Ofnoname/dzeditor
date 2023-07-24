@@ -3,7 +3,6 @@
 			<div @click="goToEditor"></div>
 			<!-- 你可以在这里添加更多的按钮来切换功能 -->
 		</div>
-		<div class="vertical-separate-line"></div>
 		<router-view class="main"></router-view>
 </template>
 
@@ -19,20 +18,13 @@ export default {
 
 <style scoped>
 .sidebar {
-	width: 3rem;
+	flex: 0 0 3rem;
 	height: 100vh;
 	background-color: #f0f0f0;
 }
 
 .main {
-	flex-grow: 1;
+	flex: 1 1 0;
 	height: 100vh;
-}
-</style>
-
-<style>
-.vertical-separate-line {
-	width: 1px;
-	background-color: #ccc;
 }
 </style>

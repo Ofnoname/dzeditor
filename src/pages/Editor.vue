@@ -1,12 +1,10 @@
 <!-- 主界面 Editor -->
 <template>
-<!-- 编辑器 -->
 	<div class="main">
 		<div class="editor-pane" v-if="previewSetting < 2">
 			<FileBar />
-			<MonacoEditor v-model:value="currentFile.content" />
+			<MonacoEditor v-model:value="currentFile.content"/>
 		</div>
-		<div class="vertical-separate-line" v-if="previewSetting === 1"></div>
 		<div class="preview-pane" v-html="previewText" v-if="previewSetting > 0"></div>
 		<span class="preview-setting" @click="switchPreview()">
 			<template v-if="previewSetting === 0"><icon-align-text-left/> 编辑</template>
@@ -30,12 +28,6 @@ const fileStore = useFileStore(),
 
 const {previewSetting} = storeToRefs(settingStore),
     {currentFile} = storeToRefs(fileStore)
-
-// 获取DOM元素
-const input = ref(null),
-		preview = ref(null)
-
-let str = ref("")
 
 // 更新文本
 const previewText = computed(() => {
@@ -64,23 +56,23 @@ onMounted(() => {
 }
 
 .editor-pane {
-	width: 800px;
-	height: 100vh;
 	display: flex;
 	flex-direction: column;
-	flex: 1;
+	flex: 1 1 0;
+	overflow: clip;
 }
 
 .preview-pane {
-	overflow: auto;
+	overflow: clip;
+	word-wrap: anywhere;
 	padding: 1rem;
-	flex: 1;
+	flex: 1 1 0;
 }
 
 .preview-setting{
 	position: fixed;
 	right: 0; top: 0;
-	padding: .4rem .8rem;
+	padding: .3rem .8rem;
 	cursor: pointer;
 	background-color: #eee;
 	&:hover{
