@@ -64,8 +64,9 @@ onMounted(() => {
 
 .preview-pane {
 	overflow: clip;
+	overflow-y: auto;
 	word-wrap: anywhere;
-	padding: 1rem;
+	padding: 0 3rem;
 	flex: 1 1 0;
 }
 

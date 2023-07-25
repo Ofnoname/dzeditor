@@ -31,7 +31,9 @@ onMounted(() => {
         wordWrap: "bounded",
         fontFamily: "Consolas, 'Courier New', Monaco, 'Lucida Console', Menlo, 'Liberation Mono', sans-serif",
         fontSize: 16,
-        // automaticLayout: true,
+        smoothScrolling: true,
+
+        automaticLayout: true,
 		    minimap: {
             enabled: false
 		    }
