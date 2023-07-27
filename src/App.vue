@@ -1,7 +1,7 @@
 <template>
 		<div class="sidebar">
 			<div v-for="(page, idx) in pages" :key="idx" @click="currentPageIdx = idx" class="sidebar-option" :class="{active: idx===currentPageIdx}">
-				<icon-align-text-left class="icon"/>
+				<component :is="page.icon" class="icon"/>
 				{{page.name}}
 			</div>
 		</div>
@@ -10,45 +10,41 @@
 
 <script setup>
 import {onMounted, ref, watchEffect} from "vue";
+import {storeToRefs} from "pinia";
 
 import {useSettingStore} from "./store.js";
 
 
 import Editor from "./pages/Editor.vue";
-import {storeToRefs} from "pinia";
-
+import StyleControl from "./pages/StyleControl.vue";
 
 const settingStore = useSettingStore(),
-    {previewCssCode} = storeToRefs(settingStore)
-
-const presetCssName = ['rightblue']
-let presetCssCode = []
+    {previewCssCode, presetCssName, presetCssCode} = storeToRefs(settingStore)
 
 const pages = [{
     name: '编辑',
-		component: Editor
+		component: Editor,
+		icon: 'icon-align-text-left'
+},
+{
+		name: '样式',
+		component: StyleControl,
+		icon: 'icon-text-style'
 }]
 let currentPageIdx = ref(0)
 
 watchEffect(() => {
-    let styleTag = document.getElementById('previewCssCode');
-    if (!styleTag) {
-        styleTag = document.createElement('style');
-        styleTag.id = 'previewCssCode';
-        document.head.appendChild(styleTag);
-    }
-    styleTag.innerHTML = previewCssCode.value;
+    document.getElementById('previewCssCode').innerHTML = previewCssCode.value;
 });
 
 onMounted(() => {
-    // open file
-    for (name of presetCssName) {
+    presetCssCode.value = []
+    for (name of presetCssName.value) {
         fetch(`/preset-${name}.css`)
             .then(response => response.text())
             .then(data => {
-                presetCssCode.push(data)
+                presetCssCode.value.push(data)
 		            if (previewCssCode.value === '') {
-                        console.log('previewCssCode is empty')
 		                previewCssCode.value = data
 		            }
             });
@@ -66,25 +62,25 @@ onMounted(() => {
 
 	background-color: #f0f0f0;
 	border-right: 1px solid #ccc;
+}
 
-	.sidebar-option {
-		flex: 0 1 3rem;
+.sidebar-option {
+	flex: 0 1 3rem;
+	width: 100%;
+
+	padding-top: .5rem;
+
+	.icon{
 		width: 100%;
+		font-size: 1.4rem;
+	}
 
-		padding-top: .5rem;
+	text-align: center;
+	font-size: .6rem;
+	cursor: pointer;
 
-		.icon{
-			width: 100%;
-			font-size: 1.4rem;
-		}
-
-		text-align: center;
-		font-size: .6rem;
-		cursor: pointer;
-
-		&.active {
-			background-color: #fff;
-		}
+	&.active, &:hover {
+		background-color: #fff;
 	}
 }
 

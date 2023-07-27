@@ -10,7 +10,7 @@ import {useSettingStore} from "../store.js";
 
 const editor = ref(null);
 
-const props = defineProps(['value'])
+const props = defineProps(['value', 'language', 'theme', 'options'])
 const emits = defineEmits(['update:value'])
 
 const settingStore = useSettingStore(),
@@ -19,13 +19,11 @@ const settingStore = useSettingStore(),
 let textModel, monacoEditor
 
 const resizeListener = () => {
-    console.log('resize')
-		debugger
     monacoEditor.layout();
 };
 
 onMounted(() => {
-		textModel = monaco.editor.createModel(props.value, 'markdown')
+		textModel = monaco.editor.createModel(props.value, props.language)
     monacoEditor = monaco.editor.create(editor.value, {
         model: textModel,
         wordWrap: "bounded",
@@ -62,6 +60,5 @@ onBeforeUnmount(() => {
 <style scoped>
 .monaco-editor {
 	width: 100%;
-	flex: 1 0 0;
 }
 </style>

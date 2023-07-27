@@ -3,7 +3,7 @@
 	<div class="main">
 		<div class="editor-pane" v-if="previewSetting < 2">
 			<FileBar />
-			<MonacoEditor v-model:value="currentFile.content"/>
+			<MonacoEditor class="content-editor" v-model:value="currentFile.content" :language="'markdown'"/>
 		</div>
 		<div class="preview-pane" v-html="previewText" v-if="previewSetting > 0"></div>
 		<span class="preview-setting" @click="switchPreview()">
@@ -60,6 +60,9 @@ onMounted(() => {
 	flex-direction: column;
 	flex: 1 1 0;
 	overflow: clip;
+	.content-editor{
+		flex: 1 1 0;
+	}
 }
 
 .preview-pane {
