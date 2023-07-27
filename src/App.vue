@@ -16,7 +16,9 @@ import {useSettingStore} from "./store.js";
 
 
 import Editor from "./pages/Editor.vue";
-import StyleControl from "./pages/StyleControl.vue";
+import Settings from "./pages/Settings.vue";
+import Download from "./pages/Download.vue";
+import About from "./pages/About.vue";
 
 const settingStore = useSettingStore(),
     {previewCssCode, presetCssName, presetCssCode} = storeToRefs(settingStore)
@@ -27,9 +29,19 @@ const pages = [{
 		icon: 'icon-align-text-left'
 },
 {
-		name: '样式',
-		component: StyleControl,
-		icon: 'icon-text-style'
+		name: '设置',
+		component: Settings,
+		icon: 'icon-setting'
+},
+{
+		name: '输出',
+		component: Download,
+		icon: 'icon-download'
+},
+{
+		name: '关于',
+		component: About,
+		icon: 'icon-info'
 }]
 let currentPageIdx = ref(0)
 
