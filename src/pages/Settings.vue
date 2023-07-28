@@ -31,21 +31,6 @@ const settingStore = useSettingStore(),
 	padding: 0 3rem;
 }
 
-.button {
-	padding: 0.5rem 1rem;
-	background-color: transparent;
-	color: #007BFF; /* 你可以根据需要更改字体颜色 */
-	border: 1px solid #007BFF; /* 你可以根据需要更改边框样式 */
-	border-radius: .25rem; /* 给按钮添加圆角 */
-	transition: .2s;
-	cursor: pointer;
-
-	&:hover {
-		background-color: #007BFF; /* 当鼠标悬停在按钮上时，填充背景颜色 */
-		color: white; /* 当鼠标悬停在按钮上时，改变字体颜色 */
-	}
-}
-
 .css-editor {
 	height: 70vh;
 	margin-top: 1rem;
