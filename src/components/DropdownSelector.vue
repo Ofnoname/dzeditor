@@ -1,19 +1,8 @@
 <template>
-	<div class="dropdown">
-		<div
-			class="dropdown-toggle"
-			@click="toggleDropdown"
-			:class="{ active: isOpen }"
-		>
-			{{ selectedOption }}
-		</div>
-		<div v-if="isOpen" class="dropdown-menu">
-			<div
-				v-for="(option, index) in options"
-				:key="index"
-				class="dropdown-item"
-				@click="selectOption(option)"
-			>
+	<div class="dropdown" @click="toggleOpen" :class="{ open: isOpen }">
+		<div class="selected">{{ selected }}</div>
+		<div class="dropdown-list">
+			<div class="dropdown-item" v-for="option in options" :key="option" @click="selectOption(option)">
 				{{ option }}
 			</div>
 		</div>
@@ -21,49 +10,81 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {ref, watchEffect} from 'vue';
 
 const props = defineProps({
     options: {
         type: Array,
         required: true,
     },
+    modelValue: {
+        type: String,
+        required: false,
+    },
 });
 
-const selectedOption = ref(null);
-const isOpen = ref(false);
+const emit = defineEmits(['update:modelValue']);
 
-function toggleDropdown() {
+let selected = ref(props.modelValue || null);
+let isOpen = ref(false);
+
+const selectOption = (option) => {
+    selected.value = option;
+    emit('update:modelValue', option);
+    isOpen.value = false;
+};
+
+const toggleOpen = () => {
     isOpen.value = !isOpen.value;
-}
+};
 
-function selectOption(option) {
-    selectedOption.value = option;
-    toggleDropdown();
-}
+window.addEventListener('click', (event) => {
+    if (!event.target.matches('.dropdown, .dropdown *')) {
+        isOpen.value = false;
+    }
+});
 </script>
 
-<style>
+<style scoped lang="scss">
 .dropdown {
+	width: 200px;
+	border: 1px solid #007bff;
+	border-radius: 4px;
+	padding: 10px;
+	background: white;
 	position: relative;
-}
-
-.dropdown-toggle {
 	cursor: pointer;
+
+	&.open .dropdown-list {
+		display: block;
+	}
 }
 
-.dropdown-menu {
+.selected {
+	font-size: 16px;
+	color: #007bff;
+}
+
+.dropdown-list {
+	display: none;
 	position: absolute;
+	width: 100%;
 	top: 100%;
 	left: 0;
+	margin-top: 10px;
+	border: 1px solid #007bff;
+	border-radius: 4px;
+	background: white;
 }
 
 .dropdown-item {
 	padding: 10px;
-	cursor: pointer;
-}
+	font-size: 14px;
+	color: #007bff;
 
-.active .dropdown-toggle {
-	background-color: #f5f5f5;
+	&:hover {
+		background: #007bff;
+		color: white;
+	}
 }
 </style>
