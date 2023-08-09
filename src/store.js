@@ -14,10 +14,10 @@ export function loadState(key) {
 }
 
 class textFile {
-    constructor(sign) {
+    constructor(sign, content) {
         this.sign = sign
         this.title = '未命名'
-        this.content = ''
+        this.content = content ?? ''
     }
 }
 
@@ -29,10 +29,29 @@ export const useFileStore = defineStore('file',{
         ...loadState('file'),
     }),
     actions: {
-        newFile() {
-            const newFile = new textFile(this.increment++)
+        newFile(content) {
+            const newFile = new textFile(this.increment++, content)
             this.fileList.push(newFile)
             this.currentFile = newFile
+        },
+        openFile() {
+            // 打开文件选择框
+            const input = document.createElement('input')
+            input.type = 'file'
+
+            input.onchange = e => {
+                const file = e.target.files[0]
+
+                // 读取文件内容
+                const reader = new FileReader()
+                reader.readAsText(file)
+                reader.onload = e => {
+                    this.newFile(e.target.result)
+                }
+            }
+
+            input.click()
+            input.remove()
         },
         switchFile(index) {
             this.currentFile = this.fileList[index]
@@ -46,6 +65,10 @@ export const useFileStore = defineStore('file',{
             if (this.fileList.length === 0) {
                 this.newFile()
             }
+        },
+        removeCurrentFile() {
+            const index = this.fileList.indexOf(this.currentFile)
+            this.removeFile(index)
         }
     },
 })

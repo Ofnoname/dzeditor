@@ -10,10 +10,12 @@
 			      @dblclick="setRename($event, true)"
 			      @blur="setRename($event, false)"
 			      @keyup.enter="setRename($event, false)"
+			      @click.middle="fileStore.removeFile(index)"
 			      @click="fileStore.switchFile(index)" >{{file.title}}</span>
 			<icon-close class="icon-close" @click="fileStore.removeFile(index)" title="删除文件"/>
 		</div>
 		<icon-add class="icon-add" @click="fileStore.newFile()" title="新建文件"/>
+		<icon-file-addition class="icon-add" @click="fileStore.openFile()" title="打开文件"/>
 	</div>
 </template>
 
@@ -29,7 +31,7 @@ function setRename(event, val) {
 }
 
 function updateTitle(event) {
-    currentFile.title = event.target.innerText
+    currentFile.value.title = event.target.innerText
 }
 </script>
 
