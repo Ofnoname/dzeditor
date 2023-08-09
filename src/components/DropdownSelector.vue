@@ -1,6 +1,8 @@
 <template>
 	<div class="dropdown" @click="toggleOpen" :class="{ open: isOpen }">
-		<div class="selected">{{ selected }}</div>
+		<div class="selected">
+			{{ selected }} <component class="icon" :is="isOpen ? 'icon-up':'icon-down'"/>
+		</div>
 		<div class="dropdown-list">
 			<div class="dropdown-item" v-for="option in options" :key="option" @click="selectOption(option)">
 				{{ option }}
@@ -10,7 +12,7 @@
 </template>
 
 <script setup>
-import {ref, watchEffect} from 'vue';
+import {ref} from 'vue';
 
 const props = defineProps({
     options: {
@@ -32,6 +34,8 @@ const selectOption = (option) => {
     selected.value = option;
     emit('update:modelValue', option);
     isOpen.value = false;
+
+    toggleOpen();
 };
 
 const toggleOpen = () => {
@@ -47,13 +51,16 @@ window.addEventListener('click', (event) => {
 
 <style scoped lang="scss">
 .dropdown {
+	position: relative;
+
 	width: 200px;
-	border: 1px solid #007bff;
 	border-radius: 4px;
 	padding: 10px;
+	border: 1px solid #007bff;
 	background: white;
-	position: relative;
+
 	cursor: pointer;
+	user-select: none;
 
 	&.open .dropdown-list {
 		display: block;
@@ -63,6 +70,10 @@ window.addEventListener('click', (event) => {
 .selected {
 	font-size: 16px;
 	color: #007bff;
+}
+
+.icon{
+	float: right;
 }
 
 .dropdown-list {
@@ -81,6 +92,7 @@ window.addEventListener('click', (event) => {
 	padding: 10px;
 	font-size: 14px;
 	color: #007bff;
+	transition: .2s;
 
 	&:hover {
 		background: #007bff;

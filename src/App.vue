@@ -1,6 +1,9 @@
+<!--todo: 选择 icon 的全局安装 还是 局部引入-->
 <template>
 		<div class="sidebar">
-			<div v-for="(page, idx) in pages" :key="idx" @click="currentPageIdx = idx" class="sidebar-option" :class="{active: idx===currentPageIdx}">
+			<div v-for="(page, idx) in pages" :key="idx"
+			     @click="currentPageIdx = idx"
+			     class="sidebar-option" :class="{active: idx===currentPageIdx}">
 				<component :is="page.icon" class="icon"/>
 				{{page.name}}
 			</div>
@@ -13,7 +16,6 @@ import {onMounted, ref, watchEffect} from "vue";
 import {storeToRefs} from "pinia";
 
 import {useSettingStore} from "./store.js";
-
 
 import Editor from "./pages/Editor.vue";
 import Settings from "./pages/Settings.vue";

@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-import {computed, onMounted, ref, watch} from 'vue'
+import {computed, onMounted, watch} from 'vue'
 import {storeToRefs} from "pinia";
 import {marked} from "marked";
 
@@ -27,7 +27,7 @@ const fileStore = useFileStore(),
 		settingStore = useSettingStore()
 
 const {previewSetting} = storeToRefs(settingStore),
-    {currentFile} = storeToRefs(fileStore)
+    {currentFile, fileList} = storeToRefs(fileStore)
 
 // 更新文本
 const previewText = computed(() => {
@@ -44,6 +44,9 @@ watch(() => fileStore.currentFile?.title, () => {
 })
 
 onMounted(() => {
+    // 加载文件
+    const index = fileList.value.findIndex(file => file.sign === currentFile.value.sign)
+		fileStore.switchFile(index)
     if (fileStore.fileList.length === 0) {
 				fileStore.newFile()
 		}
@@ -56,9 +59,10 @@ onMounted(() => {
 }
 
 .editor-pane {
+	flex: 1 1 0;
+
 	display: flex;
 	flex-direction: column;
-	flex: 1 1 0;
 	overflow: clip;
 	.content-editor{
 		flex: 1 1 0;
