@@ -1,9 +1,20 @@
 <!-- 主界面 Editor -->
 <template>
 	<div class="main">
-		<div class="editor-pane" v-if="previewSetting < 2">
+		<div class="editor-pane" v-show="previewSetting < 2">
 			<FileBar />
-			<MonacoEditor class="content-editor" v-model:value="currentFile.content" :language="'markdown'"/>
+			<MonacoEditor class="content-editor" v-model:value="currentFile.content" :language="'markdown'"
+			@sendEditorInfo="updateEditorInfo"/>
+			<div class="status-bar">
+				<div class="from-left">
+					<div class="status-item">{{editorInfo.cursorPosition?.lineNumber}}:{{editorInfo.cursorPosition?.column}}</div>
+					<div class="status-item">长度：{{editorInfo.wordCount}}</div>
+				</div>
+				<div class="from-right">
+					<div class="status-item">{{editorInfo.eolType}}</div>
+					<div class="status-item">{{editorInfo.indentType}}</div>
+				</div>
+			</div>
 		</div>
 		<div class="preview-pane" v-html="previewText" v-if="previewSetting > 0"></div>
 		<span class="preview-setting" @click="switchPreview()">
@@ -15,7 +26,7 @@
 </template>
 
 <script setup>
-import {computed, onMounted, onUnmounted, watch, watchEffect} from 'vue'
+import {computed, onMounted, onUnmounted, watch, provide, onBeforeUnmount, ref} from 'vue'
 import {storeToRefs} from "pinia";
 import {marked} from "marked";
 
@@ -34,11 +45,17 @@ const previewText = computed(() => {
 		return currentFile.value.content ? marked(currentFile.value.content) : ''
 })
 
+const editorInfo = ref({})
+
+function updateEditorInfo(info) {
+		editorInfo.value = info
+}
+
 function switchPreview() {
 		previewSetting.value = (previewSetting.value + 1) % 3
 }
 
-let keyEventHandle = null
+// 响应快捷键
 function keyEvent(event) {
     if (event.altKey) {
         if (event.key === 'w') {
@@ -50,6 +67,9 @@ function keyEvent(event) {
         else if (event.key === 'o') {
             fileStore.openFile()
         }
+        else if (event.key === 'q') {
+            switchPreview()
+        }
     }
 }
 
@@ -59,7 +79,7 @@ watch(() => currentFile.value?.title, (val) => {
       document.title = val + ' - 丁真编辑器'
 		else
 			document.title = '丁真编辑器'
-})
+}, {immediate: true})
 
 onMounted(() => {
     // 加载文件
@@ -69,11 +89,11 @@ onMounted(() => {
 				fileStore.newFile()
 		}
 
-		keyEventHandle = window.addEventListener('keyup', keyEvent)
+		window.addEventListener('keyup', keyEvent)
 })
 
-onUnmounted(() => {
-		window.removeEventListener('keyup', keyEventHandle)
+onBeforeUnmount(() => {
+		window.removeEventListener('keyup', keyEvent)
 })
 </script>
 
@@ -93,6 +113,28 @@ onUnmounted(() => {
 	}
 }
 
+.status-bar{
+	background-color: #eee;
+	user-select: none;
+
+	display: flex;
+	justify-content: space-between; /* 两端分布 */
+	align-items: center; /* 垂直居中 */
+}
+
+.status-item{
+	height: 1.4rem;
+
+	display: inline-block;
+	font-size: .85rem;
+	color: #666;
+	padding: 0 1rem;
+	&:hover{
+		color: #000;
+		background-color: #ddd;
+	}
+}
+
 .preview-pane {
 	overflow: clip;
 	overflow-y: auto;
@@ -107,7 +149,9 @@ onUnmounted(() => {
 	padding: .3rem .8rem;
 	cursor: pointer;
 	background-color: #eee;
+	color: #666;
 	&:hover{
+		color: #000;
 		background-color: #ddd;
 	}
 }

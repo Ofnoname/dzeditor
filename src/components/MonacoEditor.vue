@@ -3,15 +3,15 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onBeforeUnmount, watch} from 'vue'
+import {ref, onMounted, onBeforeUnmount, watch, computed} from 'vue'
 import * as monaco from 'monaco-editor'
 import {storeToRefs} from "pinia";
 import {useSettingStore} from "../store.js";
 
 const editor = ref(null);
 
-const props = defineProps(['value', 'language', 'theme', 'options'])
-const emits = defineEmits(['update:value'])
+const props = defineProps(['value', 'language', 'options'])
+const emits = defineEmits(['update:value', 'send-editor-info'])
 
 const settingStore = useSettingStore(),
 		{previewSetting} = storeToRefs(settingStore)
@@ -39,8 +39,21 @@ onMounted(() => {
     textModel.onDidChangeContent(e => {
         emits('update:value', textModel.getValue())
     })
-		// window.addEventListener('resize', resizeListener)
+    monacoEditor.onDidChangeCursorPosition(e => {
+        updateEditorInfo();
+    });
+		window.addEventListener('resize', resizeListener)
+    updateEditorInfo();
 })
+
+function updateEditorInfo() {
+		emits('send-editor-info', {
+				wordCount: monacoEditor.getValue().length,
+				cursorPosition: monacoEditor.getPosition(),
+				eolType: monacoEditor.getModel().getEOL() === '\r\n' ? 'CRLF' : 'LF',
+				indentType: monacoEditor.getModel().getOptions().insertSpaces ? 'Space' : 'Tab'
+		})
+}
 
 watch(props, (newProps) => {
     // Update the editor's content whenever props.value changes
