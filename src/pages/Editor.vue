@@ -3,12 +3,16 @@
 	<div class="main">
 		<div class="editor-pane" v-show="previewSetting < 2">
 			<FileBar />
-			<MonacoEditor class="content-editor" v-model:value="currentFile.content" :language="'markdown'"
+			<MonacoEditor v-if="currentFile" class="content-editor" v-model:value="currentFile.content" :language="'markdown'"
 			@sendEditorInfo="updateEditorInfo"/>
+			<div v-else class="content-empty">
+				Alt + N 新建文件 <br>
+				Alt + O 打开文件
+			</div>
 			<div class="status-bar">
 				<div class="from-left">
 					<div class="status-item">{{editorInfo.cursorPosition?.lineNumber}}:{{editorInfo.cursorPosition?.column}}</div>
-					<div class="status-item">长度：{{editorInfo.wordCount}}</div>
+					<div class="status-item">{{editorInfo.wordCount}} 个字符</div>
 				</div>
 				<div class="from-right">
 					<div class="status-item">{{editorInfo.eolType}}</div>
@@ -42,7 +46,7 @@ const {previewSetting} = storeToRefs(settingStore),
 
 // 更新文本
 const previewText = computed(() => {
-		return currentFile.value.content ? marked(currentFile.value.content) : ''
+		return currentFile.value ? marked(currentFile.value.content) : ''
 })
 
 const editorInfo = ref({})
@@ -81,13 +85,15 @@ watch(() => currentFile.value?.title, (val) => {
 			document.title = '丁真编辑器'
 }, {immediate: true})
 
+watch(() => currentFile.value, (val) => {
+		if (!val)
+        previewSetting.value = 0
+})
+
 onMounted(() => {
     // 加载文件
     const index = fileList.value.findIndex(file => file.sign === currentFile.value.sign)
 		fileStore.switchFile(index)
-    if (fileStore.fileList.length === 0) {
-				fileStore.newFile()
-		}
 
 		window.addEventListener('keyup', keyEvent)
 })
@@ -111,6 +117,15 @@ onBeforeUnmount(() => {
 	.content-editor{
 		flex: 1 1 0;
 	}
+	.content-empty{
+		flex: 1 1 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		font-size: 1.5rem;
+		color: #aaa;
+		user-select: none;
+	}
 }
 
 .status-bar{
@@ -119,16 +134,18 @@ onBeforeUnmount(() => {
 
 	display: flex;
 	justify-content: space-between; /* 两端分布 */
-	align-items: center; /* 垂直居中 */
+}
+
+.from-left, .from-right{
+	display: flex;
+	align-items: center;
 }
 
 .status-item{
-	height: 1.4rem;
-
 	display: inline-block;
 	font-size: .85rem;
 	color: #666;
-	padding: 0 1rem;
+	padding: .2rem 1rem;
 	&:hover{
 		color: #000;
 		background-color: #ddd;

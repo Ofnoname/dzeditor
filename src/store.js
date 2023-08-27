@@ -25,7 +25,7 @@ export const useFileStore = defineStore('file',{
     state: () => ({
         currentFile: null,
         increment: 1000,
-        fileList: [],
+        fileList: [new textFile(1000, '')],
         ...loadState('file'),
     }),
     actions: {
@@ -61,10 +61,6 @@ export const useFileStore = defineStore('file',{
                 this.currentFile = this.fileList[index - 1] || this.fileList[index + 1]
             }
             this.fileList.splice(index, 1)
-
-            if (this.fileList.length === 0) {
-                this.newFile()
-            }
         },
         removeCurrentFile() {
             const index = this.fileList.indexOf(this.currentFile)
