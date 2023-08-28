@@ -26,15 +26,7 @@ onMounted(() => {
 		textModel = monaco.editor.createModel(props.value, props.language)
     monacoEditor = monaco.editor.create(editor.value, {
         model: textModel,
-        wordWrap: "bounded",
-        fontFamily: "Consolas, 'Courier New', Monaco, 'Lucida Console', Menlo, 'Liberation Mono', sans-serif",
-        fontSize: 16,
-        smoothScrolling: true,
-
-        automaticLayout: true,
-		    minimap: {
-            enabled: false
-		    }
+		   ...props.options
     })
     textModel.onDidChangeContent(e => {
         emits('update:value', textModel.getValue())
@@ -50,8 +42,8 @@ function updateEditorInfo() {
 		emits('send-editor-info', {
 				wordCount: monacoEditor.getValue().length,
 				cursorPosition: monacoEditor.getPosition(),
-				eolType: monacoEditor.getModel().getEOL() === '\r\n' ? 'CRLF' : 'LF',
-				indentType: monacoEditor.getModel().getOptions().insertSpaces ? 'Space' : 'Tab'
+				// eolType: monacoEditor.getModel().getEOL() === '\r\n' ? 'CRLF' : 'LF',
+				// indentType: monacoEditor.getModel().getOptions().insertSpaces ? 'Space' : 'Tab'
 		})
 }
 

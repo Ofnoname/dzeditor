@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+import {defineStore} from 'pinia'
 
 // 持久化 pinia
 export function saveState(key, state) {
@@ -25,7 +25,7 @@ export const useFileStore = defineStore('file',{
     state: () => ({
         currentFile: null,
         increment: 1000,
-        fileList: [new textFile(1000, '')],
+        fileList: [],
         ...loadState('file'),
     }),
     actions: {
@@ -76,7 +76,34 @@ export const useSettingStore = defineStore('setting', {
         presetCssName: ['rightblue'],
         presetCssCode: [],
 
-        editorTheme: 'vs-dark',
+        editorSetting: {
+            automaticLayout: true, // 自动布局
+            wordWrap: "bounded", // 自动换行
+            theme: 'vs', // 官方自带三种主题vs, hc-black, or vs-dark
+            foldingStrategy: 'indentation', // 代码可分小段折叠
+            overviewRulerBorder: false, // 不要滚动条的边框
+            lineNumbers: 'on', // 控制行号的出现on | off
+            scrollbar: { // 滚动条设置
+                verticalScrollbarSize: 4, // 竖滚动条
+                horizontalScrollbarSize: 6, // 横滚动条
+            },
+            minimap: { // 关闭小地图
+                enabled: false,
+            },
+            wordWrapColumn: 160,
+            cursorStyle: 'line', // 光标样式
+            fontSize: 16, // 字体大小
+            fontFamily: "Consolas, 'Courier New', Monaco, 'Lucida Console', Menlo, 'Liberation Mono', sans-serif",
+            lineHeight: 32, // 行高
+            tabSize: 2, // tab缩进长度
+            autoIndent: true, // 自动布局
+            autoClosingBrackets: 'always', // 是否自动添加结束括号(包括中括号) "always" | "languageDefined" | "beforeWhitespace" | "never"
+            autoClosingDelete: 'always', // 是否自动删除结束括号(包括中括号) "always" | "never" | "auto"
+            autoClosingQuotes: 'always', // 是否自动添加结束的单引号 双引号 "always" | "languageDefined" | "beforeWhitespace" | "never"
+            cursorBlinking: 'Solid', // 光标动画样式
+            cursorSmoothCaretAnimation: true, // 是否启用光标平滑插入动画  当你在快速输入文字的时候 光标是直接平滑的移动还是直接"闪现"到当前文字所处位置
+            renderLineHighlight: 'all', // 当前行突出显示方式  "all" | "line" | "none" | "gutter"
+        },
         ...loadState('setting'),
     })
 })

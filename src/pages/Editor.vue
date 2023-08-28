@@ -3,8 +3,11 @@
 	<div class="main">
 		<div class="editor-pane" v-show="previewSetting < 2">
 			<FileBar />
-			<MonacoEditor v-if="currentFile" class="content-editor" v-model:value="currentFile.content" :language="'markdown'"
-			@sendEditorInfo="updateEditorInfo"/>
+			<MonacoEditor v-if="currentFile" class="content-editor"
+			              v-model:value="currentFile.content"
+			              :language="'markdown'"
+			              :options="editorSetting"
+			              @sendEditorInfo="updateEditorInfo"/>
 			<div v-else class="content-empty">
 				Alt + N 新建文件 <br>
 				Alt + O 打开文件
@@ -30,7 +33,7 @@
 </template>
 
 <script setup>
-import {computed, onMounted, onUnmounted, watch, provide, onBeforeUnmount, ref} from 'vue'
+import {computed, onMounted, watch, onBeforeUnmount, ref} from 'vue'
 import {storeToRefs} from "pinia";
 import {marked} from "marked";
 
@@ -41,7 +44,7 @@ import FileBar from "../components/FileBar.vue";
 const fileStore = useFileStore(),
 		settingStore = useSettingStore()
 
-const {previewSetting} = storeToRefs(settingStore),
+const {previewSetting, editorSetting} = storeToRefs(settingStore),
     {currentFile, fileList} = storeToRefs(fileStore)
 
 // 更新文本
@@ -91,9 +94,15 @@ watch(() => currentFile.value, (val) => {
 })
 
 onMounted(() => {
+    // 如果是第一次打开, 则新建一个文件
+		if (fileList.value.length === 0 && fileStore.increment === 1000) {
+				fileStore.newFile()
+		}
     // 加载文件
-    const index = fileList.value.findIndex(file => file.sign === currentFile.value.sign)
-		fileStore.switchFile(index)
+		else {
+        const index = fileList.value.findIndex(file => file.sign === currentFile.value.sign)
+        fileStore.switchFile(index)
+		}
 
 		window.addEventListener('keyup', keyEvent)
 })

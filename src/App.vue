@@ -1,4 +1,3 @@
-<!--todo: 选择 icon 的全局安装 还是 局部引入-->
 <template>
 		<div class="sidebar">
 			<div v-for="(page, idx) in pages" :key="idx"
@@ -83,6 +82,7 @@ onMounted(() => {
 	width: 100%;
 
 	padding-top: .5rem;
+	color: #333;
 
 	.icon{
 		width: 100%;
@@ -94,6 +94,7 @@ onMounted(() => {
 	cursor: pointer;
 
 	&.active, &:hover {
+		color: #000;
 		background-color: #fff;
 	}
 }

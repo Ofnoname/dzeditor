@@ -56,7 +56,7 @@ window.addEventListener('click', (event) => {
 	width: 200px;
 	border-radius: 4px;
 	padding: 10px;
-	border: 1px solid #007bff;
+	border: 1px solid #000;
 	background: white;
 
 	cursor: pointer;
@@ -68,8 +68,7 @@ window.addEventListener('click', (event) => {
 }
 
 .selected {
-	font-size: 16px;
-	color: #007bff;
+	color: #333;
 }
 
 .icon{
@@ -83,16 +82,15 @@ window.addEventListener('click', (event) => {
 	top: 100%;
 	left: 0;
 	margin-top: 10px;
-	border: 1px solid #007bff;
+	border: 1px solid #000;
 	border-radius: 4px;
 	background: white;
+	z-index: 1;
 }
 
 .dropdown-item {
 	padding: 10px;
-	font-size: 14px;
-	color: #007bff;
-	transition: .2s;
+	color: #666;
 
 	&:hover {
 		background: #007bff;
