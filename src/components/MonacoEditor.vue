@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onBeforeUnmount, watch, computed} from 'vue'
+import {ref, onMounted, onBeforeUnmount, watch} from 'vue'
 import * as monaco from 'monaco-editor'
 import {storeToRefs} from "pinia";
 import {useSettingStore} from "../store.js";
@@ -18,14 +18,19 @@ const settingStore = useSettingStore(),
 
 let textModel, monacoEditor
 
+// Resize the editor whenever the window size changes or the preview setting changes
 const resizeListener = () => {
-    monacoEditor.layout();
+    // switch editor to display:none and back to fix layout issues
+		editor.value.style.display = 'none'
+		monacoEditor.layout()
+		editor.value.style.display = 'block'
 };
 
 onMounted(() => {
 		textModel = monaco.editor.createModel(props.value, props.language)
     monacoEditor = monaco.editor.create(editor.value, {
         model: textModel,
+		    automaticLayout: true,
 		   ...props.options
     })
     textModel.onDidChangeContent(e => {
@@ -61,9 +66,3 @@ onBeforeUnmount(() => {
 		window.removeEventListener('resize', resizeListener)
 })
 </script>
-
-<style scoped>
-.monaco-editor {
-	width: 100%;
-}
-</style>
