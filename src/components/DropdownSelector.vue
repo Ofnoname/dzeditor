@@ -20,7 +20,6 @@ const props = defineProps({
         required: true,
     },
     modelValue: {
-        type: String,
         required: false,
     },
 });

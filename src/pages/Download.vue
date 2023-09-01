@@ -277,6 +277,8 @@ $copy: rgba(213, 51, 213, 0.93);
 
 	.output-pane {
 		flex: 1 1 0;
+		background-color: #f5f5f5;
+
 		padding: 1rem 3rem;
 		display: flex;
 		flex-direction: column;
