@@ -1,18 +1,25 @@
 <template>
-		<div class="sidebar">
-			<div v-for="(page, idx) in pages" :key="idx"
-			     @click="currentPageIdx = idx"
-			     class="sidebar-option" :class="{active: idx===currentPageIdx}">
-				<component :is="page.icon" class="icon"/>
-				{{page.name}}
-			</div>
+	<div class="sidebar">
+		<div v-for="(page, idx) in pages" :key="idx"
+		     @click="currentPageIdx = idx"
+		     class="sidebar-option" :class="{active: idx===currentPageIdx}">
+			<component :is="page.icon" class="icon"/>
+			{{ page.name }}
 		</div>
-		<component :is="pages[currentPageIdx].component" class="main"/>
+	</div>
+	<component :is="pages[currentPageIdx].component" class="main"/>
 </template>
 
 <script setup>
 import {onMounted, ref, watchEffect} from "vue";
 import {storeToRefs} from "pinia";
+
+import {
+    AlignTextLeft as IconAlignTextLeft,
+    Download as IconDownload,
+    Info as IconInfo,
+    Setting as IconSetting
+} from "@icon-park/vue-next";
 
 import {useSettingStore} from "./store.js";
 
@@ -25,25 +32,27 @@ const settingStore = useSettingStore(),
     {previewCssCode, presetCssName, presetCssCode} = storeToRefs(settingStore)
 
 const pages = [{
-    name: '编辑',
-		component: Editor,
-		icon: 'icon-align-text-left'
-},
-{
-		name: '设置',
-		component: Settings,
-		icon: 'icon-setting'
-},
-{
-		name: '输出',
-		component: Download,
-		icon: 'icon-download'
-},
-{
-		name: '关于',
-		component: About,
-		icon: 'icon-info'
-}]
+		    name: '编辑',
+		    component: Editor,
+		    icon: IconAlignTextLeft
+		},
+    {
+        name: '设置',
+        component: Settings,
+        icon: IconSetting
+    },
+    {
+        name: '输出',
+        component: Download,
+        icon: IconDownload
+    },
+    {
+        name: '关于',
+        component: About,
+        icon: IconInfo
+    }]
+
+
 let currentPageIdx = ref(0)
 
 watchEffect(() => {
@@ -57,9 +66,9 @@ onMounted(() => {
             .then(response => response.text())
             .then(data => {
                 presetCssCode.value.push(data)
-		            if (previewCssCode.value === '') {
-		                previewCssCode.value = data
-		            }
+                if (previewCssCode.value === '') {
+                    previewCssCode.value = data
+                }
             });
     }
 })
@@ -84,7 +93,7 @@ onMounted(() => {
 	padding-top: .5rem;
 	color: #333;
 
-	.icon{
+	.icon {
 		width: 100%;
 		font-size: 1.4rem;
 	}

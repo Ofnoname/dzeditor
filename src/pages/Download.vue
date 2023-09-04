@@ -1,6 +1,4 @@
 <script setup>
-import {jsPDF} from "jspdf";
-import html2canvas from "html2canvas";
 import {marked} from "marked";
 
 import {storeToRefs} from "pinia";
@@ -9,12 +7,12 @@ import {computed, onMounted, ref} from "vue";
 import {useFileStore, useSettingStore} from "../store.js";
 
 const fileStore = useFileStore(),
-      settingStore = useSettingStore(),
-      {currentFile} = storeToRefs(fileStore),
-      {previewCssCode} = storeToRefs(settingStore)
+    settingStore = useSettingStore(),
+    {currentFile} = storeToRefs(fileStore),
+    {previewCssCode} = storeToRefs(settingStore)
 
 const targetURL = ref(null),
-			targetType = ref("")
+    targetType = ref("")
 
 const statusMessage = ref("");
 
@@ -23,12 +21,29 @@ const previewText = computed(() => {
     return currentFile.value.content ? marked(currentFile.value.content) : ''
 })
 
-let previewPane, fileName
+let previewPane, fileName,
+		html2canvas, jsPDF
 
-onMounted(() => {
-    previewPane = document.querySelector('.preview-pane')
-    fileName = currentFile.value.title;
-})
+
+onMounted(async () => {
+    try {
+				// Load libraries
+		    const jsPDFModule = await import("jspdf");
+				jsPDF = jsPDFModule.jsPDF;
+        const html2canvasModule = await import("html2canvas");
+        html2canvas = html2canvasModule.default;
+
+        // Existing onMounted code
+        previewPane = document.querySelector('.preview-pane');
+        fileName = currentFile.value.title;
+    } catch (error) {
+        if (error.message.includes("Failed to fetch")) {
+            statusMessage.value = "加载失败，可能是网络原因。";
+        } else {
+            statusMessage.value = "加载库时发生错误。";
+        }
+    }
+});
 
 function download(type, data, fileName) {
     const a = document.createElement("a");

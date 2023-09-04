@@ -4,7 +4,7 @@
 		<div class="title"
 		     v-for="(file, index) in fileList" :key="file.sign"
 		     :class="{active: file.sign===currentFile.sign}">
-			<icon-align-text-left class="icon-file"/>
+			<IconAlignTextLeft class="icon-file"/>
 			<span class="title-name"
 			      @input="updateTitle($event)"
 			      @dblclick="setRename($event, true)"
@@ -12,16 +12,24 @@
 			      @keyup.enter="setRename($event, false)"
 			      @click.middle="fileStore.removeFile(index)"
 			      @click="fileStore.switchFile(index)" >{{file.title}}</span>
-			<icon-close class="icon-close" @click="fileStore.removeFile(index)" title="删除文件"/>
+			<IconClose class="icon-close" @click="fileStore.removeFile(index)" title="删除文件"/>
 		</div>
-		<icon-add class="icon-add" @click="fileStore.newFile()" title="新建文件"/>
-		<icon-file-addition class="icon-add" @click="fileStore.openFile()" title="打开文件"/>
+		<IconAdd class="icon-add" @click="fileStore.newFile()" title="新建文件"/>
+		<IconFileAddition class="icon-add" @click="fileStore.openFile()" title="打开文件"/>
 	</div>
 </template>
 
 <script setup>
-import {useFileStore} from "../store.js";
 import {storeToRefs} from "pinia";
+
+import {useFileStore} from "../store.js";
+
+import {
+    AlignTextLeft as IconAlignTextLeft,
+		Add as IconAdd,
+		Close as IconClose,
+		FileAddition as IconFileAddition,
+} from "@icon-park/vue-next";
 
 const fileStore = useFileStore(),
     {currentFile, fileList} = storeToRefs(fileStore)

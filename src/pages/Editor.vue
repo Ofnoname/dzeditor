@@ -25,9 +25,9 @@
 		</div>
 		<div class="preview-pane" v-html="previewText" v-if="previewSetting > 0"></div>
 		<span class="preview-setting" @click="switchPreview()">
-			<template v-if="previewSetting === 0"><icon-align-text-left/> 编辑</template>
-			<template v-if="previewSetting === 1"><icon-contrast-view/> 分屏</template>
-			<template v-if="previewSetting === 2"><icon-preview-open/> 预览</template>
+			<template v-if="previewSetting === 0"><IconAlignTextLeft/> 编辑</template>
+			<template v-if="previewSetting === 1"><IconContrastView/> 分屏</template>
+			<template v-if="previewSetting === 2"><IconPreviewOpen/> 预览</template>
 		</span>
 	</div>
 </template>
@@ -35,6 +35,12 @@
 <script setup>
 import {computed, onMounted, watch, onBeforeUnmount, ref} from 'vue'
 import {storeToRefs} from "pinia";
+
+import {
+    AlignTextLeft as IconAlignTextLeft,
+		ContrastView as IconContrastView,
+		PreviewOpen as IconPreviewOpen,
+} from "@icon-park/vue-next";
 import {marked} from "marked";
 
 import {useFileStore, useSettingStore} from "../store.js";
