@@ -1,18 +1,21 @@
 <template>
-	<div class="sidebar">
-		<div v-for="(page, idx) in pages" :key="idx"
-		     @click="currentPageIdx = idx"
-		     class="sidebar-option" :class="{active: idx===currentPageIdx}">
-			<component :is="page.icon" class="icon"/>
-			{{ page.name }}
-		</div>
+	<div id="app">
+		<section class="sidebar">
+			<RouterLink :to="page.route" active-class="active"
+			            v-for="(page, idx) in pages" :key="idx"
+			            class="sidebar-option">
+				<component :is="page.icon" class="icon"/>
+				{{ page.name }}
+			</RouterLink>
+		</section>
+		<RouterView class="main"/>
 	</div>
-	<component :is="pages[currentPageIdx].component" class="main"/>
 </template>
 
 <script setup>
-import {onMounted, ref, watchEffect} from "vue";
+import {onMounted, watchEffect} from "vue";
 import {storeToRefs} from "pinia";
+import {RouterLink, RouterView} from "vue-router";
 
 import {
     AlignTextLeft as IconAlignTextLeft,
@@ -23,37 +26,15 @@ import {
 
 import {useSettingStore} from "./store.js";
 
-import Editor from "./pages/Editor.vue";
-import Settings from "./pages/Settings.vue";
-import Download from "./pages/Download.vue";
-import About from "./pages/About.vue";
-
 const settingStore = useSettingStore(),
     {previewCssCode, presetCssName, presetCssCode} = storeToRefs(settingStore)
 
-const pages = [{
-		    name: '编辑',
-		    component: Editor,
-		    icon: IconAlignTextLeft
-		},
-    {
-        name: '设置',
-        component: Settings,
-        icon: IconSetting
-    },
-    {
-        name: '输出',
-        component: Download,
-        icon: IconDownload
-    },
-    {
-        name: '关于',
-        component: About,
-        icon: IconInfo
-    }]
-
-
-let currentPageIdx = ref(0)
+const pages = [
+    { name: '编辑', icon: IconAlignTextLeft, route: "/editor" },
+    { name: '设置', icon: IconSetting, route: "/settings" },
+    { name: '输出', icon: IconDownload, route: "/download" },
+    { name: '关于', icon: IconInfo, route: "/about" }
+];
 
 watchEffect(() => {
     document.getElementById('previewCssCode').innerHTML = previewCssCode.value;
@@ -75,6 +56,12 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+#app {
+	display: flex;
+	height: 100vh;
+	width: 100vw;
+}
+
 .sidebar {
 	flex: 0 0 3rem;
 	height: 100vh;
@@ -84,6 +71,8 @@ onMounted(() => {
 
 	background-color: #f0f0f0;
 	border-right: 1px solid #ccc;
+
+	user-select: none;
 }
 
 .sidebar-option {

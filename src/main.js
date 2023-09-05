@@ -1,23 +1,29 @@
 import { createApp } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
+import {createRouter, createWebHistory} from 'vue-router'
 import { createPinia } from 'pinia'
-import { install } from '@icon-park/vue-next/es/all'
-import '@icon-park/vue-next/styles/index.css';
 
+import '@icon-park/vue-next/styles/index.css';
 
 import App from './App.vue'
 import Editor from "./pages/Editor.vue";
+import Settings from "./pages/Settings.vue";
+import Download from "./pages/Download.vue";
+import About from "./pages/About.vue";
 import {saveState, useFileStore, useSettingStore} from "./store.js";
 
 const router = createRouter({
     history: createWebHistory(),
+    base: '/dzeditor',
     routes: [
-        { path: '/', component: Editor},
+        { path: '', component: Editor},
+        { path: '/editor', component: Editor},
+        { path: '/settings', component: Settings},
+        { path: '/download', component: Download},
+        { path: '/about', component: About},
     ]
 })
 
 const app = createApp(App)
-// install(app)
 
 app.use(createPinia())
 .use(router)
@@ -33,12 +39,13 @@ settingStore.$subscribe((mutation, state) => {
 })
 
 
-// From https://github.com/vitejs/vite/discussions/1791
+/* From https://github.com/vitejs/vite/discussions/1791 */
+
 // 解决 Monaco Editor 无法加载 worker 的问题
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
 
-self.MonacoEnvironment = {
+window.MonacoEnvironment = {
     getWorker(_, label) {
         if (label === 'css' || label === 'scss' || label === 'less') {
             return new cssWorker()
