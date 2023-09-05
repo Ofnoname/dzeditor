@@ -81,6 +81,7 @@ onMounted(() => {
 
 	padding-top: .5rem;
 	color: #333;
+	text-decoration: none;
 
 	.icon {
 		width: 100%;

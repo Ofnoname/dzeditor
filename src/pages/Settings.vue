@@ -15,9 +15,9 @@ let presetCssOption = "rightblue";
 
 
 const isCollapsed = ref({
-    edS: false, // editorSetting
+    edS: true, // editorSetting
 		prS: true, // previewSetting
-		poS: true, // programSetting
+		poS: false, // programSetting
     // Add more sections as needed
 });
 
@@ -137,7 +137,7 @@ const editorSettingsConfig = [
 		</h2>
 		<div v-if="!isCollapsed.prS" class="settings-preview">
 			<h4>选择预设</h4>
-			<DropdownSelector :options="presetCssName" v-model="presetCssOption" class="selector"/>
+			<DropdownSelector :options="presetCssName" v-model="presetCssOption"/>
 
 			<h4>自定义 CSS</h4>
 			<MonacoEditor class="css-editor" v-model:value="previewCssCode" :language="'css'"/>
@@ -166,7 +166,11 @@ const editorSettingsConfig = [
 }
 
 h2, h3, h4 {
-	font-weight: normal;
+	user-select: none;
+}
+
+h4 {
+	margin-bottom: .5rem;
 }
 
 h2{
@@ -189,16 +193,6 @@ h2{
 	&.expanded::before {
 		transform: rotate(90deg);
 	}
-}
-
-/* Dropdown and Input styles */
-DropdownSelector, Input {
-	width: 100%;
-	padding: 10px;
-	margin-bottom: 15px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	font-size: 1rem;
 }
 
 .css-editor {

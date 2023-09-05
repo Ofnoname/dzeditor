@@ -14,7 +14,19 @@ const fileStore = useFileStore(),
 const targetURL = ref(null),
     targetType = ref("")
 
-const statusMessage = ref("");
+const statusMessage = ref("选择一个格式");
+const status = ref(0);
+
+const statusClass = computed(() => {
+		switch (status.value) {
+				case 0:
+						return "initial";
+				case 1:
+						return "generating";
+				case 2:
+						return "finished";
+		}
+});
 
 // 更新文本
 const previewText = computed(() => {
@@ -80,6 +92,7 @@ async function captureCanvas() {
 async function toPDF() {
     try {
         statusMessage.value = "正在生成 PDF...";
+        status.value = 1
         const canvas = await captureCanvas();
         const imgURL = canvas.toDataURL('image/jpg', 1.0);
 
@@ -92,20 +105,24 @@ async function toPDF() {
         pdf.addImage(imgURL, 'JPEG', 0, 0, imgProps.width, imgProps.height);
         targetURL.value = pdf.output('datauristring');
         targetType.value = 'pdf'
-        statusMessage.value = "生成完成！";
+        statusMessage.value = "PDF 生成完成！";
+        status.value = 2
     } catch (error) {
         console.error('Error in toPDF:', error);
         statusMessage.value = `生成 PDF 时出错了：${error}`;
+        status.value = -1
     }
 }
 
 async function toJPG() {
     try {
         statusMessage.value = "正在生成 JPG...";
+        status.value = 1
         const canvas = await captureCanvas();
         targetURL.value = canvas.toDataURL('image/jpg', 1.0);
         targetType.value = 'jpg'
-        statusMessage.value = "生成完成！";
+        statusMessage.value = "JPG 生成完成！";
+        status.value = 2
     } catch (error) {
         console.error('Error in toJPG:', error);
         statusMessage.value = `生成 JPG 时出错了：${error}`;
@@ -118,7 +135,8 @@ function toHTML() {
         const blob = new Blob([html], { type: 'text/html' });
         targetURL.value = URL.createObjectURL(blob);
         targetType.value = 'html';
-        statusMessage.value = "生成完成！";
+        statusMessage.value = "HTML 生成完成！";
+        status.value = 2
     } catch (error) {
         console.error('Error in toHTML:', error);
         window.alert(`输出 html 时出错了：${error}`);
@@ -131,10 +149,11 @@ function toRawHTML() {
         const blob = new Blob([html], { type: 'text/html' });
         targetURL.value = URL.createObjectURL(blob);
         targetType.value = 'html';
-        statusMessage.value = "生成完成！";
+        statusMessage.value = "RawHTML 生成完成！";
+        status.value = 2
     } catch (error) {
         console.error('Error in toRawHTML:', error);
-        window.alert(`输出无 css 的 html 时出错了：${error}`);
+        window.alert(`输出 RawHTML 时出错了：${error}`);
     }
 }
 
@@ -144,10 +163,11 @@ function toMarkdown() {
         const blob = new Blob([md], { type: 'text/plain' });
         targetURL.value = URL.createObjectURL(blob);
         targetType.value = 'md';
-        statusMessage.value = "生成完成！";
+        statusMessage.value = "Markdown 生成完成！";
+        status.value = 2
     } catch (error) {
         console.error('Error in toMarkdown:', error);
-        window.alert(`输出 md 原文 时出错了：${error}`);
+        window.alert(`输出 Markdown 时出错了：${error}`);
     }
 }
 
@@ -181,6 +201,29 @@ async function copyToClipboard() {
     }
 }
 
+const buttongroup = [
+    {
+				name: 'PDF',
+				action: toPDF
+		},
+		{
+				name: 'HTML',
+				action: toHTML
+		},
+		{
+				name: 'RawHTML',
+				action: toRawHTML
+		},
+		{
+				name: 'Markdown',
+				action: toMarkdown
+		},
+		{
+				name: 'JPG',
+				action: toJPG
+		},
+]
+
 </script>
 
 <template>
@@ -189,14 +232,10 @@ async function copyToClipboard() {
 			<!-- Grouped buttons for outputs -->
 
 			<h3>导出为</h3>
-			<div class="button-group">
-				<div class="button" @click="toPDF">PDF</div>
-				<div class="button" @click="toHTML">HTML</div>
-				<div class="button" @click="toRawHTML">HTML (无CSS)</div>
-				<div class="button" @click="toMarkdown">MD</div>
-				<div class="button" @click="toJPG">JPG</div>
-			</div>
-			<div class="status">{{ statusMessage }}</div>
+			<ul ul-layout="" class="button-group">
+				<li class="button" v-for="button in buttongroup"  :class="{finished: status===2 && statusMessage.match(button.name)}" :key="button.name" @click="button.action">{{ button.name }}</li>
+			</ul>
+			<div class="status" :class="statusClass">{{ statusMessage }}</div>
 
 
 			<!-- Separator -->
@@ -236,6 +275,10 @@ $copy: rgba(213, 51, 213, 0.93);
 		border-top-left-radius: 0;
 		border-bottom-left-radius: 0;
 		border-left: none;
+	}
+	.button.finished{
+		background-color: $theme;
+		color: white;
 	}
 }
 
@@ -308,9 +351,17 @@ $copy: rgba(213, 51, 213, 0.93);
 		.status {
 			padding: 0.5rem 1rem;
 			height: fit-content;
-			transition: 1s all;
+			transition: .2s all;
 			border-radius: 9px;
-			background: $theme;
+			&.initial {
+				background: saturate($theme, 10%)
+			}
+			&.generating {
+				background: $theme;
+			}
+			&.finished {
+				background: desaturate($theme, 10%);
+			}
 		}
 	}
 

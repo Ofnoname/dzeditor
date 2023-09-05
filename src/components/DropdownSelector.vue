@@ -1,18 +1,24 @@
 <template>
-	<div class="dropdown" @click="toggleOpen" :class="{ open: isOpen }">
-		<div class="selected">
-			{{ selected }} <component class="icon" :is="isOpen ? 'icon-up':'icon-down'"/>
-		</div>
-		<div class="dropdown-list">
-			<div class="dropdown-item" v-for="option in options" :key="option" @click="selectOption(option)">
-				{{ option }}
-			</div>
-		</div>
+<div ref="dropdown" class="dropdown" @click="toggleOpen" :class="{ open: isOpen }" tabindex="0">
+	<div class="selected">
+		{{ selected }}
+		<IconDown class="icon"/>
 	</div>
+
+	<ul ul-layout class="dropdown-list">
+		<li class="dropdown-item" v-for="option in options" :key="option" @click="selectOption(option)">
+			{{ option }}
+		</li>
+	</ul>
+</div>
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {onMounted, onBeforeUnmount, ref} from 'vue';
+
+import {
+		Down as IconDown,
+} from "@icon-park/vue-next";
 
 const props = defineProps({
     options: {
@@ -29,6 +35,8 @@ const emit = defineEmits(['update:modelValue']);
 let selected = ref(props.modelValue || null);
 let isOpen = ref(false);
 
+const dropdown = ref(null);
+
 const selectOption = (option) => {
     selected.value = option;
     emit('update:modelValue', option);
@@ -41,33 +49,50 @@ const toggleOpen = () => {
     isOpen.value = !isOpen.value;
 };
 
-window.addEventListener('click', (event) => {
-    if (!event.target.matches('.dropdown, .dropdown *')) {
+const cListener = (event) => {
+    // 如果点击的元素不是 dropdown 或其子元素
+    if (!dropdown.value.contains(event.target)) {
         isOpen.value = false;
     }
-});
+}
+
+onMounted(() => {
+    window.addEventListener('click', cListener);
+})
+
+onBeforeUnmount(() => {
+		window.removeEventListener('click', cListener);
+})
 </script>
 
 <style scoped lang="scss">
-.dropdown {
-	position: relative;
+$theme: #539cea;
+$global-padding: 8px;
 
+.dropdown {
 	width: 200px;
+
+	position: relative;
 	border-radius: 4px;
-	padding: 10px;
+	padding: $global-padding;
 	border: 1px solid #000;
 	background: white;
+	color: #333;
 
 	cursor: pointer;
 	user-select: none;
 
+	transition: .1s;
+
 	&.open .dropdown-list {
 		display: block;
 	}
-}
-
-.selected {
-	color: #333;
+	&.open .icon{
+		transform: rotate(180deg);
+	}
+	&:hover, &.open {
+		box-shadow: 0 0 1px 1px #539cea;
+	}
 }
 
 .icon{
@@ -88,11 +113,11 @@ window.addEventListener('click', (event) => {
 }
 
 .dropdown-item {
-	padding: 10px;
-	color: #666;
+	padding: $global-padding;
+	transition: .2s;
 
 	&:hover {
-		background: #007bff;
+		background: $theme;
 		color: white;
 	}
 }

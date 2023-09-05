@@ -39,4 +39,18 @@ body{
 	margin: 0;
 	padding: 0;
 }
+
+/* Reset default padding, margin, and list style for <ul> with ul-layout attribute */
+ul[ul-layout] {
+	list-style-type: none; /* Removes default list bullets */
+	padding: 0;            /* Removes default padding */
+	margin: 0;             /* Removes default margin */
+}
+
+/* Reset default margin and padding for <li> that are children of <ul> with ul-layout attribute */
+ul[ul-layout] > li {
+	margin: 0;
+	padding: 0;
+}
+
 </style>

@@ -38,9 +38,11 @@ watch(inputValue, (newValue) => {
 
 <style scoped lang="scss">
 .input-container {
-	padding: 10px;
+	padding: 8px;
 	border: 1px solid #000;
+	background-color: white;
 	border-radius: 4px;
+	transition: .2s;
 
 	input {
 		width: 100%;
@@ -49,6 +51,9 @@ watch(inputValue, (newValue) => {
 		background: transparent;
 		color: #333;
 		font-size: 1rem;
+	}
+	&:has(input:focus){
+		box-shadow: 0 0 1px 1px #539cea;
 	}
 }
 </style>
