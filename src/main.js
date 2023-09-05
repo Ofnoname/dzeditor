@@ -9,7 +9,7 @@ import Editor from "./pages/Editor.vue";
 import Settings from "./pages/Settings.vue";
 import Download from "./pages/Download.vue";
 import About from "./pages/About.vue";
-import {saveState, useFileStore, useSettingStore} from "./store.js";
+import {saveState, useGs} from "./store.js";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -29,15 +29,10 @@ app.use(createPinia())
 .use(router)
 .mount('#app')
 
-const fileStore = useFileStore(),
-    settingStore = useSettingStore()
-fileStore.$subscribe((mutation, state) => {
-    saveState('file', state)
+const gs = useGs()
+gs.$subscribe((mutation, state) => {
+    saveState('globalStore', state)
 })
-settingStore.$subscribe((mutation, state) => {
-    saveState('setting', state)
-})
-
 
 /* From https://github.com/vitejs/vite/discussions/1791 */
 

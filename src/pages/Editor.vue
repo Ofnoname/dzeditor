@@ -1,17 +1,21 @@
 <!-- 主界面 Editor -->
 <template>
 	<div class="main">
-		<div class="editor-pane" v-show="previewSetting < 2">
+		<div class="editor-pane" v-show="previewMode < 2">
 			<FileBar />
 			<MonacoEditor v-if="currentFile" class="content-editor"
 			              v-model:value="currentFile.content"
 			              :language="'markdown'"
 			              :options="editorSetting"
 			              @sendEditorInfo="updateEditorInfo"/>
+
+			<!--	无文件时的占位界面	-->
 			<div v-else class="content-empty">
 				Alt + N 新建文件 <br>
 				Alt + O 打开文件
 			</div>
+
+			<!--	状态栏		-->
 			<div class="status-bar">
 				<div class="from-left">
 					<div class="status-item">{{editorInfo.cursorPosition?.lineNumber}}:{{editorInfo.cursorPosition?.column}}</div>
@@ -23,17 +27,20 @@
 				</div>
 			</div>
 		</div>
-		<div class="preview-pane" v-html="previewText" v-if="previewSetting > 0"></div>
+
+		<PreviewPane :text="currentFile?.content" v-if="previewMode > 0"/>
+
+		<!--	切换预览模式按钮 	-->
 		<span class="preview-setting" @click="switchPreview()">
-			<template v-if="previewSetting === 0"><IconAlignTextLeft/> 编辑</template>
-			<template v-if="previewSetting === 1"><IconContrastView/> 分屏</template>
-			<template v-if="previewSetting === 2"><IconPreviewOpen/> 预览</template>
+			<template v-if="previewMode === 0"><IconAlignTextLeft/> 编辑</template>
+			<template v-if="previewMode === 1"><IconContrastView/> 分屏</template>
+			<template v-if="previewMode === 2"><IconPreviewOpen/> 预览</template>
 		</span>
 	</div>
 </template>
 
 <script setup>
-import {computed, onMounted, watch, onBeforeUnmount, ref} from 'vue'
+import {onMounted, watch, onBeforeUnmount, ref} from 'vue'
 import {storeToRefs} from "pinia";
 
 import {
@@ -41,22 +48,14 @@ import {
 		ContrastView as IconContrastView,
 		PreviewOpen as IconPreviewOpen,
 } from "@icon-park/vue-next";
-import {marked} from "marked";
 
-import {useFileStore, useSettingStore} from "../store.js";
+import {useGs} from "../store.js";
 import MonacoEditor from "../components/MonacoEditor.vue";
 import FileBar from "../components/FileBar.vue";
+import PreviewPane from "../components/PreviewPane.vue";
 
-const fileStore = useFileStore(),
-		settingStore = useSettingStore()
-
-const {previewSetting, editorSetting} = storeToRefs(settingStore),
-    {currentFile, fileList} = storeToRefs(fileStore)
-
-// 更新文本
-const previewText = computed(() => {
-		return currentFile.value ? marked(currentFile.value.content) : ''
-})
+const gs = useGs()
+const {previewMode, editorSetting, currentFile, fileList} = storeToRefs(gs)
 
 const editorInfo = ref({})
 
@@ -65,7 +64,7 @@ function updateEditorInfo(info) {
 }
 
 function switchPreview() {
-		previewSetting.value = (previewSetting.value + 1) % 3
+		previewMode.value = (previewMode.value + 1) % 3
 }
 
 // 响应快捷键
@@ -87,27 +86,27 @@ function keyEvent(event) {
 }
 
 // 监听文件名变化, 动态修改网页标题
-watch(() => currentFile.value?.title, (val) => {
+watch(() => currentFile?.value?.title, (val) => {
     if (val)
       document.title = val + ' - 丁真编辑器'
 		else
 			document.title = '丁真编辑器'
 }, {immediate: true})
 
-watch(() => currentFile.value, (val) => {
+watch(currentFile, (val) => {
 		if (!val)
-        previewSetting.value = 0
+        previewMode.value = 0
 })
 
 onMounted(() => {
     // 如果是第一次打开, 则新建一个文件
-		if (fileList.value.length === 0 && fileStore.increment === 1000) {
-				fileStore.newFile()
+		if (fileList.value.length === 0 && gs.fileAutoInc === 1000) {
+				gs.newFile()
 		}
     // 加载文件
 		else {
         const index = fileList.value.findIndex(file => file.sign === currentFile.value.sign)
-        fileStore.switchFile(index)
+        gs.switchFile(index)
 		}
 
 		window.addEventListener('keyup', keyEvent)
@@ -168,10 +167,6 @@ onBeforeUnmount(() => {
 }
 
 .preview-pane {
-	overflow: clip;
-	overflow-y: auto;
-	word-wrap: anywhere;
-	padding: 0 3rem;
 	flex: 1 1 0;
 }
 

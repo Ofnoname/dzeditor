@@ -2,14 +2,14 @@
 import { ref } from 'vue';
 import {storeToRefs} from "pinia";
 
-import {useSettingStore} from "../store.js";
+import {useGs} from "../store.js";
 
 import MonacoEditor from "../components/MonacoEditor.vue";
 import DropdownSelector from "../components/DropdownSelector.vue";
 import Input from "../components/Input.vue";
 
-const settingStore = useSettingStore(),
-    {previewCssCode, presetCssName, editorSetting} = storeToRefs(settingStore)
+const gs = useGs(),
+    {previewCss, editorSetting} = storeToRefs(gs)
 
 let presetCssOption = "rightblue";
 
@@ -137,10 +137,10 @@ const editorSettingsConfig = [
 		</h2>
 		<div v-if="!isCollapsed.prS" class="settings-preview">
 			<h4>选择预设</h4>
-			<DropdownSelector :options="presetCssName" v-model="presetCssOption"/>
+			<DropdownSelector :options="previewCss.preset" v-model="previewCss.choosePreset"/>
 
 			<h4>自定义 CSS</h4>
-			<MonacoEditor class="css-editor" v-model:value="previewCssCode" :language="'css'"/>
+			<MonacoEditor class="css-editor" v-model:value="previewCss.css" :language="'css'"/>
 		</div>
 
 		<h2 :class="{expanded: !isCollapsed.poS}" @click="isCollapsed.poS ^= 1">

@@ -6,15 +6,15 @@
 import {ref, onMounted, onBeforeUnmount, watch} from 'vue'
 import * as monaco from 'monaco-editor'
 import {storeToRefs} from "pinia";
-import {useSettingStore} from "../store.js";
+import {useGs} from "../store.js";
 
 const editor = ref(null);
 
 const props = defineProps(['value', 'language', 'options'])
 const emits = defineEmits(['update:value', 'send-editor-info'])
 
-const settingStore = useSettingStore(),
-		{previewSetting} = storeToRefs(settingStore)
+const gs = useGs()
+const {previewMode} = storeToRefs(gs)
 
 let textModel, monacoEditor
 
@@ -59,7 +59,7 @@ watch(props, (newProps) => {
     }
 }, { deep: true })  // Watch object deeply
 
-watch(()=>previewSetting.value, resizeListener)
+watch(()=>previewMode.value, resizeListener)
 
 onBeforeUnmount(() => {
     monacoEditor.dispose()

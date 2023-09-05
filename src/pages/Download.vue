@@ -1,15 +1,13 @@
 <script setup>
-import {marked} from "marked";
-
 import {storeToRefs} from "pinia";
 import {computed, onMounted, ref} from "vue";
 
-import {useFileStore, useSettingStore} from "../store.js";
+import {useGs} from "../store.js";
 
-const fileStore = useFileStore(),
-    settingStore = useSettingStore(),
-    {currentFile} = storeToRefs(fileStore),
-    {previewCssCode} = storeToRefs(settingStore)
+import PreviewPane from "../components/PreviewPane.vue";
+
+const gs = useGs()
+const {currentFile, previewCss} = storeToRefs(gs)
 
 const targetURL = ref(null),
     targetType = ref("")
@@ -27,11 +25,6 @@ const statusClass = computed(() => {
 						return "finished";
 		}
 });
-
-// 更新文本
-const previewText = computed(() => {
-    return currentFile.value.content ? marked(currentFile.value.content) : ''
-})
 
 let previewPane, fileName,
 		html2canvas, jsPDF
@@ -131,7 +124,7 @@ async function toJPG() {
 
 function toHTML() {
     try {
-        const html = previewPane.outerHTML + `<style>${previewCssCode.value}</style>`;
+        const html = previewPane.outerHTML + `<style>${previewCss.value.css}</style>`;
         const blob = new Blob([html], { type: 'text/html' });
         targetURL.value = URL.createObjectURL(blob);
         targetType.value = 'html';
@@ -246,7 +239,7 @@ const buttongroup = [
 			<div class="button copy" :class="{disabled: targetType !== 'jpg'}" @click="copyToClipboard">复制到剪贴板（仅图片）</div>
 		</div>
 
-		<div class="preview-pane" v-html="previewText"></div>
+		<PreviewPane :text="currentFile.content"/>
 	</div>
 </template>
 
@@ -367,9 +360,6 @@ $copy: rgba(213, 51, 213, 0.93);
 
 	.preview-pane {
 		flex: 1 1 0;
-		overflow: auto;
-		word-wrap: anywhere;
-		padding: 0 3rem;
 	}
 }
 </style>

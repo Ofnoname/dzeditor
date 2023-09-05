@@ -24,10 +24,10 @@ import {
     Setting as IconSetting
 } from "@icon-park/vue-next";
 
-import {useSettingStore} from "./store.js";
+import {useGs} from "./store.js";
 
-const settingStore = useSettingStore(),
-    {previewCssCode, presetCssName, presetCssCode} = storeToRefs(settingStore)
+const gs = useGs()
+// const {previewCssCode, presetCssName, presetCssCode} = storeToRefs(settingStore)
 
 const pages = [
     { name: '编辑', icon: IconAlignTextLeft, route: "/editor" },
@@ -36,23 +36,23 @@ const pages = [
     { name: '关于', icon: IconInfo, route: "/about" }
 ];
 
-watchEffect(() => {
-    document.getElementById('previewCssCode').innerHTML = previewCssCode.value;
-});
-
-onMounted(() => {
-    presetCssCode.value = []
-    for (name of presetCssName.value) {
-        fetch(`/preset-${name}.css`)
-            .then(response => response.text())
-            .then(data => {
-                presetCssCode.value.push(data)
-                if (previewCssCode.value === '') {
-                    previewCssCode.value = data
-                }
-            });
-    }
-})
+// watchEffect(() => {
+//     document.getElementById('previewCssCode').innerHTML = previewCssCode.value;
+// });
+//
+// onMounted(() => {
+//     presetCssCode.value = []
+//     for (name of presetCssName.value) {
+//         fetch(`/preset-${name}.css`)
+//             .then(response => response.text())
+//             .then(data => {
+//                 presetCssCode.value.push(data)
+//                 if (previewCssCode.value === '') {
+//                     previewCssCode.value = data
+//                 }
+//             });
+//     }
+// })
 </script>
 
 <style scoped lang="scss">

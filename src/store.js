@@ -13,7 +13,7 @@ export function loadState(key) {
     }
 }
 
-class textFile {
+class TextFile {
     constructor(sign, content) {
         this.sign = sign
         this.title = '未命名'
@@ -21,61 +21,18 @@ class textFile {
     }
 }
 
-export const useFileStore = defineStore('file',{
+export const useGs = defineStore('globalStore', {
     state: () => ({
         currentFile: null,
-        increment: 1000,
+        fileAutoInc: 1000,
         fileList: [],
-        ...loadState('file'),
-    }),
-    actions: {
-        newFile(content) {
-            const newFile = new textFile(this.increment++, content)
-            this.fileList.push(newFile)
-            this.currentFile = newFile
+
+        previewMode: 1, // 0: 编辑，1: 分屏，2: 预览
+        previewCss: {
+            css: '',
+            preset: ['rightblue'],
+            choosePreset: 'rightblue',
         },
-        openFile() {
-            // 打开文件选择框
-            const input = document.createElement('input')
-            input.type = 'file'
-
-            input.onchange = e => {
-                const file = e.target.files[0]
-
-                // 读取文件内容
-                const reader = new FileReader()
-                reader.readAsText(file)
-                reader.onload = e => {
-                    this.newFile(e.target.result)
-                }
-            }
-
-            input.click()
-            input.remove()
-        },
-        switchFile(index) {
-            this.currentFile = this.fileList[index]
-        },
-        removeFile(index) {
-            if (this.fileList[index] === this.currentFile) {
-                this.currentFile = this.fileList[index - 1] || this.fileList[index + 1]
-            }
-            this.fileList.splice(index, 1)
-        },
-        removeCurrentFile() {
-            const index = this.fileList.indexOf(this.currentFile)
-            this.removeFile(index)
-        }
-    },
-})
-
-export const useSettingStore = defineStore('setting', {
-    state: () => ({
-        previewSetting: 1, // 0: 编辑，1: 分屏，2: 预览
-        previewCssCode: '',
-        presetCssName: ['rightblue'],
-        presetCssCode: [],
-
         editorSetting: {
 
             overviewRulerBorder: false, // 不要滚动条的边框
@@ -107,6 +64,47 @@ export const useSettingStore = defineStore('setting', {
             lineHeight: 32, // 行高
             tabSize: 2, // tab缩进长度
         },
-        ...loadState('setting'),
-    })
+        markedSetting: {
+            breaks: true, // 是否支持github的换行符
+            gfm: true, // 是否支持github的markdown语法
+        },
+
+        ...loadState('globalStore'),
+    }),
+    actions: {
+        newFile(content) {
+            const newFile = new TextFile(this.fileAutoInc++, content)
+            this.fileList.push(newFile)
+            this.currentFile = newFile
+        },
+        openFile() {
+            // 打开文件选择框
+            const input = document.createElement('input')
+            input.type = 'file'
+            input.onchange = e => {
+                const file = e.target.files[0]
+                // 读取文件内容
+                const reader = new FileReader()
+                reader.readAsText(file)
+                reader.onload = e => {
+                    this.newFile(e.target.result)
+                }
+            }
+            input.click()
+            input.remove()
+        },
+        switchFile(index) {
+            this.currentFile = this.fileList[index]
+        },
+        removeFile(index) {
+            if (this.fileList[index] === this.currentFile) {
+                this.currentFile = this.fileList[index - 1] || this.fileList[index + 1]
+            }
+            this.fileList.splice(index, 1)
+        },
+        removeCurrentFile() {
+            const index = this.fileList.indexOf(this.currentFile)
+            this.removeFile(index)
+        }
+    }
 })

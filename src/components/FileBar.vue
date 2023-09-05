@@ -22,7 +22,7 @@
 <script setup>
 import {storeToRefs} from "pinia";
 
-import {useFileStore} from "../store.js";
+import {useGs} from "../store.js";
 
 import {
     AlignTextLeft as IconAlignTextLeft,
@@ -31,8 +31,8 @@ import {
 		FileAddition as IconFileAddition,
 } from "@icon-park/vue-next";
 
-const fileStore = useFileStore(),
-    {currentFile, fileList} = storeToRefs(fileStore)
+const gs = useGs()
+const {currentFile, fileList} = storeToRefs(gs)
 
 function setRename(event, val) {
     event.target.setAttribute('contenteditable', val.toString());
