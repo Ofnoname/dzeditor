@@ -10,12 +10,12 @@
 			      @dblclick="setRename($event, true)"
 			      @blur="setRename($event, false)"
 			      @keyup.enter="setRename($event, false)"
-			      @click.middle="fileStore.removeFile(index)"
+			      @click.middle="gs.removeFile(index)"
 			      @click="fileStore.switchFile(index)" >{{file.title}}</span>
-			<IconClose class="icon-close" @click="fileStore.removeFile(index)" title="删除文件"/>
+			<IconClose class="icon-close" @click="gs.removeFile(index)" title="删除文件"/>
 		</div>
-		<IconAdd class="icon-add" @click="fileStore.newFile()" title="新建文件"/>
-		<IconFileAddition class="icon-add" @click="fileStore.openFile()" title="打开文件"/>
+		<IconAdd class="icon-add" @click="gs.newFile()" title="新建文件"/>
+		<IconFileAddition class="icon-add" @click="gs.openFile()" title="打开文件"/>
 	</div>
 </template>
 

@@ -71,13 +71,13 @@ function switchPreview() {
 function keyEvent(event) {
     if (event.altKey) {
         if (event.key === 'w') {
-            fileStore.removeCurrentFile()
+            gs.removeCurrentFile()
         }
         else if (event.key === 'n') {
-            fileStore.newFile()
+            gs.newFile()
         }
         else if (event.key === 'o') {
-            fileStore.openFile()
+            gs.openFile()
         }
         else if (event.key === 'q') {
             switchPreview()
@@ -110,10 +110,12 @@ onMounted(() => {
 		}
 
 		window.addEventListener('keyup', keyEvent)
+    window.addEventListener('paste', pasteImageEvent, true)
 })
 
 onBeforeUnmount(() => {
 		window.removeEventListener('keyup', keyEvent)
+		window.removeEventListener('paste', pasteImageEvent, true)
 })
 </script>
 

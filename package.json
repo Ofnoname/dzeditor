@@ -12,6 +12,7 @@
     "@icon-park/vue-next": "^1.4.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
+    "localforage": "^1.10.0",
     "marked": "^5.1.1",
     "monaco-editor": "^0.40.0",
     "pinia": "^2.1.4",
