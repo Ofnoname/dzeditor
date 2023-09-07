@@ -31,7 +31,7 @@ export const useGs = defineStore('globalStore', {
         previewCss: {
             css: '',
             preset: ['rightblue'],
-            choosePreset: 'rightblue',
+            presetChoice: 'rightblue',
         },
         editorSetting: {
 
@@ -67,7 +67,16 @@ export const useGs = defineStore('globalStore', {
         markedSetting: {
             breaks: true, // 是否支持github的换行符
             gfm: true, // 是否支持github的markdown语法
+            headerIds: false, // 是否支持github的header id
+            mangle: false,
         },
+
+        /* 在编辑器粘贴图片的设置
+            * off: 关闭
+            * asMarkdown: 转换为markdown格式
+            * asHTML: 转换为<img>标签
+        * */
+        pasteImage: "as markdown",
 
         ...loadState('globalStore'),
     }),

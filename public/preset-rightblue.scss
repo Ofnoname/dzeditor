@@ -1,152 +1,137 @@
-.preview-pane{
-	color: #333;
+.preview-pane {
+	/* .preview-pane 即文章的顶级元素 */
 	font-size: 16px;
+	font-family: sans-serif;
 	word-break: break-all;
-	padding: 0 3rem;
+	padding: 1rem 3rem;
 
-	--theme-color: #dcf6fb; /* 主题色 */
-	--theme-color2: skyblue; /* 主题色2 */
-	--theme-color3: #b399ff; /* 主题色3 链接色 */
-	--theme-color4: #ef8b34; /* 主题色4 链接高亮 */
-	--theme-color5: #fff0ff; /* 主题色5 表头 */
-	--theme-color6: #fffbff; /* 主题色6 表格 */
+	--theme: #b399ff;
+	--theme-revert: #ef8b34;
+	--table-head: #c2a3ea;
+	--table: #eae0f8;
+	--quote: #dcf6fb;
 	--white-background: #f8f8f8;
+	--black-font: #333;
+
+	--code-monospace: 'Consolas', 'Lucida Console', "Courier New", "Monaco", monospace;
+	--title: 'Arial', serif;
+
+	color: var(--black-font);
+	background-color: var(--white-background);
 
 	a {
 		text-decoration: none;
-		color: var(--theme-color3);
+		color: var(--theme);
 		transition: .2s;
 	}
 
-	a:hover{
-		color: var(--theme-color4);
+	a:hover {
+		color: var(--theme-revert);
 	}
 
-	h1.postTitle a {
-		font-size: 2rem;
-		color: #121212;
-		font-weight: 400;
-	}
-	h1
-	.cnblogs-markdown {
-		user-select: text;
-	}
-
-	p, li {
+	p {
 		line-height: 1.8;
 		margin: 1.4rem 0;
-		font-size: 1rem;
 	}
 
-	h2:before{
+	li {
+		line-height: 1.8;
+	}
+
+	h1 {
+		text-align: center;
+		font-family: var(--title);
+	}
+
+	h1::after {
+		content: '';
+		display: block;
+		background-color: #ccc;
+		height: 1px;
+		margin: 1rem;
+	}
+
+	h2 {
+
+	}
+
+	h2:before {
 		content: "#";
-		color: var(--theme-color3);
+		color: var(--theme);
 		margin-right: .5rem;
 		margin-left: -1.5rem;
 	}
 
-	h3:before{
+	h3:before {
 		content: "|";
-		color: var(--theme-color3);
+		color: var(--theme);
 		margin-right: .5rem;
 	}
 
-	h1 {
-		font-size: 2rem;
-		margin: 1.4rem 0;
-	}
-
-	h2 {
-		font-size: 1.5rem;
-		margin: 1.4rem 0;
-	}
-
-	h3 {
-		font-size: 1.25rem;
-		margin: 1.2rem 0;
-	}
-
-	h4 {
-		font-size: 1.1rem;
-		margin: 1.2rem 0;
-	}
-
-	hr{
+	hr {
 		margin: 1rem 0;
 	}
 
-	.cnblogs-markdown .table-wrapper table {
+	table {
 		margin: 1rem auto;
+		border-collapse: collapse;
 	}
 
-	.cnblogs-markdown .table-wrapper table th {background-color: var(--theme-color5) !important;}
-	.cnblogs-markdown .table-wrapper td {background-color: var(--theme-color6) !important;}
-
-	.cnblogs-markdown .math.inline {
-		padding-inline-start: .25rem;
-		padding-inline-end: .25rem;
+	th, td {
+		padding: .5rem 1rem;
+		border: 1px solid var(--black-font);
 	}
 
-	#topics .cnblogs-markdown code,
-	.feedbackCon code{
-		font: 1.1em var(--info-font) !important;
-		background-color: transparent !important;
-		tab-size: 4 !important;
-		padding: 0 0 !important;
+	th {
+		background-color: var(--table-head);
 	}
 
-	#topics .cnblogs-markdown :not(pre) code,
-	.feedbackCon :not(pre) code{
-		color: var(--theme-color2) !important;
+	td {
+		background-color: var(--table);
 	}
 
-	#topics .cnblogs-markdown pre code {
-		line-height: 1.8em !important;
-		color: #333 !important;
+
+	code {
+		font: 1.1rem var(--code-monospace);
+		background-color: transparent;
+		padding: 0;
+	}
+
+	:not(pre) code {
+		color: var(--theme);
+	}
+
+	pre code {
+		line-height: 1.8em;
 	}
 
 	img {
 		margin: 1rem auto;
 		display: block;
-		max-width: 95%;
+		max-width: 80%;
 
 		border-radius: .25rem;
 		box-shadow: 0 0 3px #aaa;
 
-		transition: transform 300ms cubic-bezier(0.2, 0, 0.2, 1),
-		box-shadow .2s !important;
+		transition: .2s;
 	}
 
 	img:hover {
 		box-shadow: 0 0 8px #555;
 	}
 
-	kbd {
-		font: 1.1em var(--info-font);
-		padding: 3px 5px;
-		margin: 0 3px;
-		color: #555;
-		vertical-align: middle;
-		background-color: #fcfcfc;
-		border: 1px solid #ccc;
-		border-bottom-color: #bbb;
-		border-radius: 3px;
-		box-shadow: inset 0 -1px 0 #bbb;
-	}
-
 	blockquote {
-		background: linear-gradient(to bottom right,
-			var(--theme-color),
-			var(--theme-color2));
-		border-radius: .25rem;
-		border-left: none !important;
+		background: linear-gradient(to bottom right, var(--quote), transparent);
+		padding: .5rem 1rem;
+		border-radius: 0 1rem 1rem 0;
 		margin: 1rem 0;
-		padding: 1px .8rem;
+		position: relative;
+		border-left: .5rem solid var(--theme);
+		color: #666;
 	}
 
-	ol, ul{
+	ol, ul {
 		margin-left: 1rem;
 		padding-left: 0;
-		line-height: 1.6;
 	}
 }

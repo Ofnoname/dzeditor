@@ -43,6 +43,8 @@
 import {onMounted, watch, onBeforeUnmount, ref} from 'vue'
 import {storeToRefs} from "pinia";
 
+import localforage from 'localforage'
+
 import {
     AlignTextLeft as IconAlignTextLeft,
 		ContrastView as IconContrastView,
@@ -85,8 +87,40 @@ function keyEvent(event) {
     }
 }
 
+// 在 monaco 捕获粘贴之前捕获粘贴事件，如果是图片则插入图片
+function pasteImageEvent(event) {
+    if (gs.pasteImage === "off")
+				return
+    const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+    for (const index in items) {
+        const item = items[index];
+        if (item.kind === 'file' && item.type.indexOf('image') !== -1) {
+            const blob = item.getAsFile();
+            const reader = new FileReader();
+            reader.onload = async function(event){
+                const dataURL = event.target.result;
+                const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+
+                // Save the image to IndexedDB
+                await localforage.setItem(uniqueName, dataURL);
+
+                // Use the saved image's name in the editor content
+		            const t = (gs.pasteImage === "asMarkdown") ?
+				            `![](image/${uniqueName})` :
+				            `<img src="image/${uniqueName}">`
+
+		            // insert t to monaco from its current cursor
+
+
+                event.stopPropagation();
+            };
+            reader.readAsDataURL(blob);
+        }
+    }
+}
+
 // 监听文件名变化, 动态修改网页标题
-watch(() => currentFile?.value?.title, (val) => {
+watch(() => currentFile.value?.title, (val) => {
     if (val)
       document.title = val + ' - 丁真编辑器'
 		else

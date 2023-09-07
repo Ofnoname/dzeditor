@@ -137,7 +137,7 @@ const editorSettingsConfig = [
 		</h2>
 		<div v-if="!isCollapsed.prS" class="settings-preview">
 			<h4>选择预设</h4>
-			<DropdownSelector :options="previewCss.preset" v-model="previewCss.choosePreset"/>
+			<DropdownSelector :options="previewCss.preset" v-model="previewCss.presetChoice"/>
 
 			<h4>自定义 CSS</h4>
 			<MonacoEditor class="css-editor" v-model:value="previewCss.css" :language="'css'"/>
@@ -147,7 +147,8 @@ const editorSettingsConfig = [
 			程序设置
 		</h2>
 		<div v-if="!isCollapsed.poS" class="settings-program">
-			暂无设置
+			<h4>在编辑器中粘贴图片</h4>
+			<DropdownSelector :options="['off', 'asMarkdown', 'asHTML']" v-model="gs.pasteImage"/>
 		</div>
 	</div>
 </template>

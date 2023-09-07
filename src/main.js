@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import {createRouter, createWebHistory} from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 
 import '@icon-park/vue-next/styles/index.css';
@@ -11,6 +11,10 @@ import Download from "./pages/Download.vue";
 import About from "./pages/About.vue";
 import {saveState, useGs} from "./store.js";
 
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
+import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
+
+/* 路由设置 */
 const router = createRouter({
     history: createWebHistory(),
     base: '/dzeditor',
@@ -23,23 +27,36 @@ const router = createRouter({
     ]
 })
 
+
+/* 挂载主程序和响应插件 */
 const app = createApp(App)
 
 app.use(createPinia())
 .use(router)
 .mount('#app')
 
+console.log('Vue 3 App Mounted!')
+
+/* 配置 Gs 的自动保存 */
 const gs = useGs()
 gs.$subscribe((mutation, state) => {
     saveState('globalStore', state)
 })
 
-/* From https://github.com/vitejs/vite/discussions/1791 */
+/* 注册 Service Worker */
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/serviceWorker.js')
+        .then(() => {
+            console.log('Service Worker registered.');
+        }).catch(error => {
+            console.error('Service Worker registration failed:', error);
+    });
+}
 
-// 解决 Monaco Editor 无法加载 worker 的问题
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
-import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
 
+/* From https://github.com/vitejs/vite/discussions/1791
+ * 为 Monaco Editor 加载 worker
+ * */
 window.MonacoEnvironment = {
     getWorker(_, label) {
         if (label === 'css' || label === 'scss' || label === 'less') {

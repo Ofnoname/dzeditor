@@ -13,8 +13,7 @@
 </template>
 
 <script setup>
-import {onMounted, watchEffect} from "vue";
-import {storeToRefs} from "pinia";
+import {watch} from "vue";
 import {RouterLink, RouterView} from "vue-router";
 
 import {
@@ -27,7 +26,6 @@ import {
 import {useGs} from "./store.js";
 
 const gs = useGs()
-// const {previewCssCode, presetCssName, presetCssCode} = storeToRefs(settingStore)
 
 const pages = [
     { name: '编辑', icon: IconAlignTextLeft, route: "/editor" },
@@ -36,23 +34,18 @@ const pages = [
     { name: '关于', icon: IconInfo, route: "/about" }
 ];
 
-// watchEffect(() => {
-//     document.getElementById('previewCssCode').innerHTML = previewCssCode.value;
-// });
-//
-// onMounted(() => {
-//     presetCssCode.value = []
-//     for (name of presetCssName.value) {
-//         fetch(`/preset-${name}.css`)
-//             .then(response => response.text())
-//             .then(data => {
-//                 presetCssCode.value.push(data)
-//                 if (previewCssCode.value === '') {
-//                     previewCssCode.value = data
-//                 }
-//             });
-//     }
-// })
+/* 将 gs.previewCss.css 的样式文本同步到页面 */
+watch(() => gs.previewCss.css, (value) => {
+    const dynamicStyle = document.getElementById('dynamic-style')
+		dynamicStyle.innerHTML = value
+}, {immediate: true});
+
+/* 当选择预设时，fetch 预设样式 */
+watch(() => gs.previewCss.presetChoice, async (value) => {
+    const fileName = `preset-${value}.css`
+		const response = await fetch(fileName)
+    gs.previewCss.css = await response.text()
+}, {immediate: true});
 </script>
 
 <style scoped lang="scss">
@@ -69,8 +62,7 @@ const pages = [
 	display: flex;
 	flex-direction: column;
 
-	background-color: #f0f0f0;
-	border-right: 1px solid #ccc;
+	background-color: #e0e0e0;
 
 	user-select: none;
 }
@@ -93,13 +85,11 @@ const pages = [
 	cursor: pointer;
 
 	&.active, &:hover {
-		color: #000;
 		background-color: #fff;
 	}
 }
 
 .main {
-	flex: 1 1 0;
-	height: 100vh;
+	width: calc(100vw - 3rem);
 }
 </style>

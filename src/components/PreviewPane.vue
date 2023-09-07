@@ -16,8 +16,14 @@ const props = defineProps({
 const gs = useGs()
 const {markedSetting} = storeToRefs(gs)
 
+marked.setOptions({
+		...markedSetting.value,
+		headerIds: false,
+		mangle: false,
+})
+
 const previewText = computed(() => {
-    return props.text ? marked.parse(props.text, markedSetting) : ''
+    return props.text ? marked.parse(props.text, markedSetting.value) : ''
 })
 </script>
 
@@ -31,8 +37,9 @@ const previewText = computed(() => {
 
 	padding: 1rem 3rem;
 
-	overflow: clip;
+	overflow-x: auto;
 	overflow-y: auto;
-	word-wrap: anywhere;
+	word-break: break-word;
+	overflow-wrap: break-word;
 }
 </style>
