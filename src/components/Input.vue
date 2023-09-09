@@ -37,12 +37,22 @@ watch(inputValue, (newValue) => {
 </script>
 
 <style scoped lang="scss">
+$theme: #539cea;
+$background: #fff;
+
+$global-padding: 8px;
+$global-border-radius: 4px;
+
+$shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // 轻微的阴影效果
+$deep-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); // 轻微的阴影效果
+$deeper-shadow: 0 0px 1px 1px #000;
+
 .input-container {
-	padding: 8px;
-	border: 1px solid #000;
-	background-color: white;
-	border-radius: 4px;
-	transition: .2s;
+	padding: $global-padding;
+	background-color: $background;
+	border-radius: $global-border-radius;
+	box-shadow: $shadow;
+	transition: .1s;
 
 	input {
 		width: 100%;
@@ -50,10 +60,14 @@ watch(inputValue, (newValue) => {
 		outline: none;
 		background: transparent;
 		color: #333;
+
 		font-size: 1rem;
 	}
+	&:hover {
+		box-shadow: $deep-shadow;
+	}
 	&:has(input:focus){
-		box-shadow: 0 0 1px 1px #539cea;
+		box-shadow: $deeper-shadow;
 	}
 }
 </style>

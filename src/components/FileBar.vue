@@ -11,7 +11,7 @@
 			      @blur="setRename($event, false)"
 			      @keyup.enter="setRename($event, false)"
 			      @click.middle="gs.removeFile(index)"
-			      @click="fileStore.switchFile(index)" >{{file.title}}</span>
+			      @click="gs.switchFile(index)" >{{file.title}}</span>
 			<IconClose class="icon-close" @click="gs.removeFile(index)" title="删除文件"/>
 		</div>
 		<IconAdd class="icon-add" @click="gs.newFile()" title="新建文件"/>

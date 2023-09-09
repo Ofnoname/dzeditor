@@ -41,6 +41,7 @@ export const useGs = defineStore('globalStore', {
                 horizontalScrollbarSize: 6, // 横滚动条
             },
             autoIndent: true, // 自动布局
+            smoothScrolling: true, // 平滑滚动
             cursorSmoothCaretAnimation: true, // 是否启用光标平滑插入动画  当你在快速输入文字的时候 光标是直接平滑的移动还是直接"闪现"到当前文字所处位置
 
             automaticLayout: true, // 自动布局
@@ -65,7 +66,6 @@ export const useGs = defineStore('globalStore', {
             tabSize: 2, // tab缩进长度
         },
         markedSetting: {
-            breaks: true, // 是否支持github的换行符
             gfm: true, // 是否支持github的markdown语法
             headerIds: false, // 是否支持github的header id
             mangle: false,
@@ -76,7 +76,7 @@ export const useGs = defineStore('globalStore', {
             * asMarkdown: 转换为markdown格式
             * asHTML: 转换为<img>标签
         * */
-        pasteImage: "as markdown",
+        pasteImage: "asMarkdown",
 
         ...loadState('globalStore'),
     }),
@@ -90,6 +90,8 @@ export const useGs = defineStore('globalStore', {
             // 打开文件选择框
             const input = document.createElement('input')
             input.type = 'file'
+            input.accept = "text/plain, .md";
+
             input.onchange = e => {
                 const file = e.target.files[0]
                 // 读取文件内容
