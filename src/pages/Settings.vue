@@ -7,6 +7,7 @@ import {useGs} from "../store.js";
 import MonacoEditor from "../components/MonacoEditor.vue";
 import DropdownSelector from "../components/DropdownSelector.vue";
 import Input from "../components/Input.vue";
+import localforage from "localforage";
 
 const gs = useGs(),
     {previewCss, editorSetting} = storeToRefs(gs)
@@ -150,6 +151,8 @@ const editorSettingsConfig = [
 			<h4>在编辑器中粘贴图片</h4>
 			<DropdownSelector :options="['off', 'asMarkdown', 'asHTML']" v-model="gs.pasteImage"/>
 		</div>
+		<button class="red" @click="localforage.clear()">清空本地图片</button>
+		<button class="green" @click="gs.$reset">恢复默认设置</button>
 	</div>
 </template>
 
@@ -200,20 +203,49 @@ h2{
 	height: 360px;
 }
 
-/* Button styles (if any) */
- button {
- 	padding: 10px 15px;
- 	background-color: #007BFF;
- 	color: white;
- 	border: none;
- 	border-radius: 4px;
- 	cursor: pointer;
- 	transition: background-color 0.3s;
- }
+$theme: #539cea;
 
- button:hover {
- 	background-color: #0056b3;
- }
+button {
+	user-select: none;
+	padding: 0.5rem 1rem;
+	display: block;
+	margin-top: 1rem;
+	background-color: transparent;
+	text-align: center;
+	border-radius: .25rem;
+	transition: .2s;
+	cursor: pointer;
+
+	// 默认按钮颜色
+	$button-color: $theme;
+	color: $button-color;
+	border: 1px solid $button-color;
+
+	&:hover {
+		background-color: $button-color;
+		color: white;
+	}
+	&.red {
+		$button-color: red;
+		color: $button-color;
+		border-color: $button-color;
+
+		&:hover {
+			background-color: $button-color;
+			color: white;
+		}
+	}
+	&.green {
+		$button-color: green;
+		color: $button-color;
+		border-color: $button-color;
+
+		&:hover {
+			background-color: $button-color;
+			color: white;
+		}
+	}
+}
 
 /* Additional styles can be added based on specific components and requirements */
 
