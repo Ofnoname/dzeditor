@@ -45,19 +45,20 @@ onMounted(() => {
 
 function updateEditorInfo() {
 		emits('send-editor-info', {
+        editor: monacoEditor,
 				wordCount: monacoEditor.getValue().length,
 				cursorPosition: monacoEditor.getPosition(),
 				// eolType: monacoEditor.getModel().getEOL() === '\r\n' ? 'CRLF' : 'LF',
 				// indentType: monacoEditor.getModel().getOptions().insertSpaces ? 'Space' : 'Tab'
 		})
 }
-
-watch(props, (newProps) => {
-    // Update the editor's content whenever props.value changes
-    if (textModel.getValue() !== newProps.value) {
-        textModel.setValue(newProps.value)
-    }
-}, { deep: true })  // Watch object deeply
+//
+// watch(props, (newProps) => {
+//     // Update the editor's content whenever props.value changes
+//     if (textModel.getValue() !== newProps.value) {
+//         textModel.setValue(newProps.value)
+//     }
+// }, { deep: true })  // Watch object deeply
 
 watch(()=>previewMode.value, resizeListener)
 

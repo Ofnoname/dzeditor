@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "@icon-park/vue-next": "^1.4.2",
+    "dom-to-image": "^2.6.0",
     "highlight.js": "^11.8.0",
     "html2canvas": "^1.4.1",
+    "html2pdf.js": "^0.10.1",
     "jspdf": "^2.5.1",
     "localforage": "^1.10.0",
     "marked": "^5.1.1",

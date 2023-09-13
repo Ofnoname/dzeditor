@@ -42,6 +42,7 @@
 <script setup>
 import {onMounted, watch, onBeforeUnmount, ref} from 'vue'
 import {storeToRefs} from "pinia";
+import * as monaco from 'monaco-editor'
 
 import localforage from 'localforage'
 
@@ -88,7 +89,7 @@ function keyEvent(event) {
 }
 
 // 在 monaco 捕获粘贴之前捕获粘贴事件，如果是图片则插入图片
-function pasteImageEvent(event) {
+async function pasteImageEvent(event) {
     if (gs.pasteImage === "off")
 				return
     const items = (event.clipboardData || event.originalEvent.clipboardData).items;
@@ -110,7 +111,14 @@ function pasteImageEvent(event) {
 				            `<img src="image/${uniqueName}">`
 
 		            // insert t to monaco from its current cursor
+		            const editor = editorInfo.value.editor
 
+                await navigator.clipboard.writeText(t);
+
+
+                // 在 Monaco 编辑器中触发 paste 事件
+                // editor.trigger('keyboard', 'type', { text: t });
+		            currentFile.value.content += t;
 
                 event.stopPropagation();
             };
