@@ -78,6 +78,11 @@ export const useGs = defineStore('globalStore', {
         * */
         pasteImage: "asMarkdown",
 
+        /*
+        * 打印宽度
+        * */
+        printWidth: 1000,
+
         ...loadState('globalStore'),
     }),
     actions: {

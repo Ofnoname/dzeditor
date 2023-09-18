@@ -12,9 +12,6 @@ import localforage from "localforage";
 const gs = useGs(),
     {previewCss, editorSetting} = storeToRefs(gs)
 
-let presetCssOption = "rightblue";
-
-
 const isCollapsed = ref({
     edS: true, // editorSetting
 		prS: true, // previewSetting

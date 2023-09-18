@@ -5,6 +5,7 @@ import {useGs} from "../store.js";
 import PreviewPane from "../components/PreviewPane.vue";
 
 import domToImage from 'dom-to-image';
+import Input from "../components/Input.vue";
 
 const gs = useGs()
 
@@ -105,7 +106,6 @@ function toMarkdown() {
     target.type = 'md';
 }
 
-
 async function copyToClipboard() {
     try {
         switch (targetType.value) {
@@ -173,6 +173,7 @@ function generate(button) {
     }
 }
 
+const isCollapsed = ref(null)
 </script>
 
 <template>
@@ -201,9 +202,14 @@ function generate(button) {
 			<div class="button copy" :class="{disabled: target.type !== 'jpg'}" @click="copyToClipboard">
 				复制到剪贴板（仅图片）
 			</div>
+			<div v-if="!isCollapsed">
+				<h4>打印宽度</h4>
+				<Input v-model="gs.printWidth" />
+			</div>
 		</div>
 
-		<PreviewPane :text="gs.currentFile.content"/>
+
+		<PreviewPane :style="{width: gs.printWidth + 'px'}" :text="gs.currentFile.content"/>
 	</div>
 </template>
 
@@ -327,7 +333,7 @@ $copy: rgba(213, 51, 213, 0.93);
 }
 
 .output-pane {
-	flex: 1 1 0;
+	flex: 1;
 	background-color: #f5f5f5;
 
 	padding: 1rem 3rem;
@@ -339,6 +345,6 @@ $copy: rgba(213, 51, 213, 0.93);
 }
 
 .preview-pane {
-	flex: 1 1 0;
+	max-width: 3000px;
 }
 </style>
