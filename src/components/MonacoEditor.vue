@@ -3,67 +3,60 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onBeforeUnmount, watch} from 'vue'
+import {ref, onMounted, onBeforeUnmount, watch, computed} from 'vue'
 import * as monaco from 'monaco-editor'
-import {storeToRefs} from "pinia";
 import {useGs} from "../store.js";
 
 const editor = ref(null);
 
-const props = defineProps(['value', 'language', 'options'])
-const emits = defineEmits(['update:value', 'send-editor-info'])
+const props = defineProps(['text', 'language', 'options'])
+const emits = defineEmits(['update:text', 'updated'])
 
 const gs = useGs()
-const {previewMode} = storeToRefs(gs)
 
 let textModel, monacoEditor
 
-// Resize the editor whenever the window size changes or the preview setting changes
-const resizeListener = () => {
-    // switch editor to display:none and back to fix layout issues
-		editor.value.style.display = 'none'
-		monacoEditor.layout()
-		editor.value.style.display = 'block'
+const onResize = () => {
+    editor.value.style.display = 'none'
+    monacoEditor.layout()
+    editor.value.style.display = 'block'
 };
 
 onMounted(() => {
-		textModel = monaco.editor.createModel(props.value, props.language)
+    textModel = monaco.editor.createModel(props.text, props.language);
     monacoEditor = monaco.editor.create(editor.value, {
         model: textModel,
-		    automaticLayout: true,
-		   ...props.options
-    })
-    textModel.onDidChangeContent(e => {
-        emits('update:value', textModel.getValue())
-    })
-    monacoEditor.onDidChangeCursorPosition(e => {
-        updateEditorInfo();
+        automaticLayout: true,
+        ...props.options
     });
-		window.addEventListener('resize', resizeListener)
-    updateEditorInfo();
-})
 
-function updateEditorInfo() {
-		emits('send-editor-info', {
-        editor: monacoEditor,
-				wordCount: monacoEditor.getValue().length,
-				cursorPosition: monacoEditor.getPosition(),
-				// eolType: monacoEditor.getModel().getEOL() === '\r\n' ? 'CRLF' : 'LF',
-				// indentType: monacoEditor.getModel().getOptions().insertSpaces ? 'Space' : 'Tab'
+    textModel.onDidChangeContent(e => {
+        const newValue = textModel.getValue();
+        if (newValue !== props.text) {
+            emits('update:text', newValue);
+        }
+    });
+
+    monacoEditor.onDidChangeCursorPosition(e => {
+				emits('updated', {
+            monaco: computed(() => monacoEditor),
+            wordCount: computed(() => monacoEditor.getValue().length),
+            cursorPosition: computed(() => monacoEditor.getPosition()),
+        })
 		})
-}
-//
-// watch(props, (newProps) => {
-//     // Update the editor's content whenever props.value changes
-//     if (textModel.getValue() !== newProps.value) {
-//         textModel.setValue(newProps.value)
-//     }
-// }, { deep: true })  // Watch object deeply
 
-watch(()=>previewMode.value, resizeListener)
+    watch(() => props.text, (newValue) => {
+        if (newValue !== textModel.getValue()) {
+            textModel.setValue(newValue);
+        }
+    })
+
+    window.addEventListener('resize', onResize);
+    watch(() => gs.previewMode, onResize)
+});
 
 onBeforeUnmount(() => {
     monacoEditor.dispose()
-		window.removeEventListener('resize', resizeListener)
+    window.removeEventListener('resize', onResize)
 })
 </script>

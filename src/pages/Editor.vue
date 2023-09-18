@@ -3,46 +3,38 @@
 	<div class="main">
 		<div class="editor-pane" v-show="previewMode < 2">
 			<FileBar />
-			<MonacoEditor v-if="currentFile" class="content-editor"
-			              v-model:value="currentFile.content"
-			              :language="'markdown'"
-			              :options="editorSetting"
-			              @sendEditorInfo="updateEditorInfo"/>
+			<MonacoEditor v-if="currentFile" class="content-editor" @updated="mi = $event"
+			              v-model:text="currentFile.content" :language="'markdown'" :options="gs.editorSetting"/>
 
 			<!--	无文件时的占位界面	-->
-			<div v-else class="content-empty">
+			<section v-else class="content-empty">
 				Alt + N 新建文件 <br>
 				Alt + O 打开文件
-			</div>
+			</section>
 
 			<!--	状态栏		-->
-			<div class="status-bar">
+			<section class="status-bar">
 				<div class="from-left">
-					<div class="status-item">{{editorInfo.cursorPosition?.lineNumber}}:{{editorInfo.cursorPosition?.column}}</div>
-					<div class="status-item">{{editorInfo.wordCount}} 个字符</div>
+					<div class="status-item">{{mi?.cursorPosition.lineNumber}}:{{mi?.cursorPosition.column}}</div>
+					<div class="status-item">{{mi?.wordCount}} 个字符</div>
 				</div>
-				<div class="from-right">
-					<div class="status-item">{{editorInfo.eolType}}</div>
-					<div class="status-item">{{editorInfo.indentType}}</div>
-				</div>
-			</div>
+			</section>
 		</div>
 
 		<PreviewPane :text="currentFile?.content" v-if="previewMode > 0"/>
 
 		<!--	切换预览模式按钮 	-->
-		<span class="preview-setting" @click="switchPreview()">
+		<section class="preview-setting" @click="switchPreview()">
 			<template v-if="previewMode === 0"><IconAlignTextLeft/> 编辑</template>
 			<template v-if="previewMode === 1"><IconContrastView/> 分屏</template>
 			<template v-if="previewMode === 2"><IconPreviewOpen/> 预览</template>
-		</span>
+		</section>
 	</div>
 </template>
 
 <script setup>
-import {onMounted, watch, onBeforeUnmount, ref} from 'vue'
+import {onMounted, watch, onBeforeUnmount, ref, toRaw} from 'vue'
 import {storeToRefs} from "pinia";
-import * as monaco from 'monaco-editor'
 
 import localforage from 'localforage'
 
@@ -58,106 +50,94 @@ import FileBar from "../components/FileBar.vue";
 import PreviewPane from "../components/PreviewPane.vue";
 
 const gs = useGs()
-const {previewMode, editorSetting, currentFile, fileList} = storeToRefs(gs)
+const {previewMode, currentFile} = storeToRefs(gs)
 
-const editorInfo = ref({})
-
-function updateEditorInfo(info) {
-		editorInfo.value = info
-}
+const name = '丁真编辑器'
+const mi = ref(null)
 
 function switchPreview() {
 		previewMode.value = (previewMode.value + 1) % 3
 }
 
-// 响应快捷键
 function keyEvent(event) {
     if (event.altKey) {
-        if (event.key === 'w') {
-            gs.removeCurrentFile()
-        }
-        else if (event.key === 'n') {
-            gs.newFile()
-        }
-        else if (event.key === 'o') {
-            gs.openFile()
-        }
-        else if (event.key === 'q') {
-            switchPreview()
-        }
+        switch (event.key) {
+						case 'n':
+								gs.newFile()
+								break
+						case 'o':
+								gs.openFile()
+								break
+						case 'w':
+								gs.removeCurrentFile()
+								break
+						case 'q':
+								switchPreview()
+								break
+				}
     }
 }
 
+async function pasteImage(dataURL) {
+    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+
+    // Save the image to IndexedDB
+    await localforage.setItem(uniqueName, dataURL);
+
+    // Use the saved image's name in the editor content
+    const t = (gs.pasteImage === "asMarkdown") ?
+        `![](image/${uniqueName})` :
+        `<img alt="" src="image/${uniqueName}">`;
+
+    const editor = mi.value.monaco
+    toRaw(editor).trigger('keyboard', 'type', {text: t});
+}
+
 // 在 monaco 捕获粘贴之前捕获粘贴事件，如果是图片则插入图片
-async function pasteImageEvent(event) {
+async function pasteEvent(event) {
     if (gs.pasteImage === "off")
-				return
+        return;
+
+    event.preventDefault();
     const items = (event.clipboardData || event.originalEvent.clipboardData).items;
     for (const index in items) {
         const item = items[index];
         if (item.kind === 'file' && item.type.indexOf('image') !== -1) {
             const blob = item.getAsFile();
             const reader = new FileReader();
-            reader.onload = async function(event){
-                const dataURL = event.target.result;
-                const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
-
-                // Save the image to IndexedDB
-                await localforage.setItem(uniqueName, dataURL);
-
-                // Use the saved image's name in the editor content
-		            const t = (gs.pasteImage === "asMarkdown") ?
-				            `![](image/${uniqueName})` :
-				            `<img src="image/${uniqueName}">`
-
-		            // insert t to monaco from its current cursor
-		            const editor = editorInfo.value.editor
-
-                await navigator.clipboard.writeText(t);
-
-
-                // 在 Monaco 编辑器中触发 paste 事件
-                // editor.trigger('keyboard', 'type', { text: t });
-		            currentFile.value.content += t;
-
-                event.stopPropagation();
-            };
-            reader.readAsDataURL(blob);
+            reader.onload = async (event) => {
+								await pasteImage(event.target.result);
+						};
+            await reader.readAsDataURL(blob);
         }
     }
 }
 
-// 监听文件名变化, 动态修改网页标题
-watch(() => currentFile.value?.title, (val) => {
-    if (val)
-      document.title = val + ' - 丁真编辑器'
-		else
-			document.title = '丁真编辑器'
+watch(() => gs.currentFile?.title, (val) => {
+		document.title = val ? val + ' - ' + name : name
 }, {immediate: true})
 
-watch(currentFile, (val) => {
-		if (!val)
-        previewMode.value = 0
+watch(gs.currentFile, (val) => {
+		if (!val) previewMode.value = 0
 })
 
 onMounted(() => {
-    // 如果是第一次打开, 则新建一个文件
-		if (fileList.value.length === 0 && gs.fileAutoInc === 1000) {
+    // 如果是第一次打开, 则新建一个文件, 否则打开上次打开的文件
+		if (gs.fileList.length === 0 && gs.fileAutoInc === 1000) {
 				gs.newFile()
 		}
-    // 加载文件
 		else {
-        const index = fileList.value.findIndex(file => file.sign === currentFile.value.sign)
+        const index = gs.fileList.findIndex(file => file.sign === currentFile.value.sign)
         gs.switchFile(index)
 		}
 
 		window.addEventListener('keyup', keyEvent)
-    window.addEventListener('paste', pasteImageEvent, true)
+    window.addEventListener('paste', pasteEvent, true)
 })
 
 onBeforeUnmount(() => {
 		window.removeEventListener('keyup', keyEvent)
-		window.removeEventListener('paste', pasteImageEvent, true)
+		window.removeEventListener('paste', pasteEvent, true)
 })
 </script>
 

@@ -1,167 +1,108 @@
 <script setup>
-import {storeToRefs} from "pinia";
-import {computed, onMounted, ref} from "vue";
+import {onMounted, reactive, ref} from "vue";
 
 import {useGs} from "../store.js";
-
 import PreviewPane from "../components/PreviewPane.vue";
 
+import domToImage from 'dom-to-image';
+
 const gs = useGs()
-const {currentFile, previewCss} = storeToRefs(gs)
 
-const targetURL = ref(null),
-    targetType = ref("")
+const target = reactive({
+    url: '',
+    type: '',
+})
 
-const statusMessage = ref("选择一个格式");
-const status = ref(0);
+const status = reactive({
+    message: "选择一个格式",
+    type: "info",
+})
 
-const statusClass = computed(() => {
-		switch (status.value) {
-				case 0:
-						return "initial";
-				case 1:
-						return "generating";
-				case 2:
-						return "finished";
-		}
-});
-
-let previewPane, fileName,
-		html2canvas, jsPDF
-
+let html2canvas, jsPDF
+let previewPane
 
 onMounted(async () => {
     try {
-				// Load libraries
-		    const jsPDFModule = await import("jspdf");
-				jsPDF = jsPDFModule.jsPDF;
+        // Load libraries
+        const jsPDFModule = await import("jspdf");
+        jsPDF = jsPDFModule.jsPDF;
         const html2canvasModule = await import("html2canvas");
         html2canvas = html2canvasModule.default;
 
-        // Existing onMounted code
-        previewPane = document.querySelector('.preview-pane');
-        fileName = currentFile.value.title;
+        previewPane = document.querySelector('.preview-pane')
     } catch (error) {
         if (error.message.includes("Failed to fetch")) {
-            statusMessage.value = "加载失败，可能是网络原因。";
+            status.message = "加载失败，可能是网络原因。";
         } else {
-            statusMessage.value = "加载库时发生错误。";
+            status.message = "加载库时发生错误。";
         }
     }
 });
 
-function download(type, data, fileName) {
-    const a = document.createElement("a");
-    if (type === "text") {
-        const file = new Blob([data]);
-        a.href = URL.createObjectURL(file);
-    }
-    else if (type === "url") {
-        a.href = data;
-    }
-
-    a.download = fileName;
-    a.click();
-    statusMessage.value = "下载完成！";
-}
-
-// dom 转 canvas，然后转 pdf 或者图片
-async function captureCanvas() {
+function download() {
     try {
-        previewPane.style.overflow = 'visible';
-        // 由于 html2canvas 的 bug，不能渲染视口之外的部分，所以修改 overflow 再恢复
-        const canvas = await html2canvas(previewPane, {
-            width: previewPane.scrollWidth,
-            height: previewPane.scrollHeight + 100, // 考虑内边距
-        });
-        previewPane.style.overflow = 'auto';
-        return canvas;
+        const a = document.createElement("a");
+
+        a.href = target.url;
+        a.download = `${gs.currentFile.title}.${target.type}`;
+        a.click();
     } catch (error) {
-        previewPane.style.overflow = 'auto'; // 确保在错误发生时恢复 overflow。
-        throw error; // 重新抛出错误以在调用函数中处理。
+        status.message = `下载时出错了：${error}`;
+        status.type = 'error';
+    } finally {
+        status.message = "下载完成！";
+        status.type = "downloaded";
     }
 }
 
 async function toPDF() {
-    try {
-        statusMessage.value = "正在生成 PDF...";
-        status.value = 1
-        const canvas = await captureCanvas();
-        const imgURL = canvas.toDataURL('image/jpg', 1.0);
+    previewPane.style.overflow = 'visible';
+    const url = await domToImage.toJpeg(previewPane, {
+        bgcolor: 'white',
+    })
+    previewPane.style.overflow = 'auto';
 
-        const imgProps = {
-            width: canvas.width * 25.4 / 72,
-            height: canvas.height * 25.4 / 72
-        };
+    const dpi = 96; // 假设屏幕的DPI为96，这个值可能需要根据你的实际情况进行调整
+    const widthInMm = (previewPane.scrollWidth / dpi) * 25.4;
+    const heightInMm = (previewPane.scrollHeight / dpi) * 25.4;
 
-        const pdf = new jsPDF('p', 'mm', [imgProps.width, imgProps.height]);
-        pdf.addImage(imgURL, 'JPEG', 0, 0, imgProps.width, imgProps.height);
-        targetURL.value = pdf.output('datauristring');
-        targetType.value = 'pdf'
-        statusMessage.value = "PDF 生成完成！";
-        status.value = 2
-    } catch (error) {
-        console.error('Error in toPDF:', error);
-        statusMessage.value = `生成 PDF 时出错了：${error}`;
-        status.value = -1
-    }
+    const pdf = new jsPDF('p', 'mm', [widthInMm, heightInMm]); // 设置PDF的尺寸
+    pdf.addImage(url, 'JPEG', 0, 0, widthInMm, heightInMm); // 将图片添加到PDF中
+
+    target.url = pdf.output('bloburl'); // 将PDF的URL保存到 target.url 中
+    target.type = 'pdf';
 }
 
 async function toJPG() {
-    try {
-        statusMessage.value = "正在生成 JPG...";
-        status.value = 1
-        const canvas = await captureCanvas();
-        targetURL.value = canvas.toDataURL('image/jpg', 1.0);
-        targetType.value = 'jpg'
-        statusMessage.value = "JPG 生成完成！";
-        status.value = 2
-    } catch (error) {
-        console.error('Error in toJPG:', error);
-        statusMessage.value = `生成 JPG 时出错了：${error}`;
-    }
+    previewPane.style.overflow = 'visible';
+    const url = await domToImage.toJpeg(previewPane, {
+        bgcolor: 'white',
+    })
+    previewPane.style.overflow = 'auto';
+
+    target.url = url;
+    target.type = 'jpg';
 }
 
 function toHTML() {
-    try {
-        const html = previewPane.outerHTML + `<style>${previewCss.value.css}</style>`;
-        const blob = new Blob([html], { type: 'text/html' });
-        targetURL.value = URL.createObjectURL(blob);
-        targetType.value = 'html';
-        statusMessage.value = "HTML 生成完成！";
-        status.value = 2
-    } catch (error) {
-        console.error('Error in toHTML:', error);
-        window.alert(`输出 html 时出错了：${error}`);
-    }
+    const html = previewPane.outerHTML + `<style>${gs.previewCss.css}</style>`;
+    const blob = new Blob([html], {type: 'text/html'});
+    target.url = URL.createObjectURL(blob);
+    target.type = 'html';
 }
 
 function toRawHTML() {
-    try {
-        const html = previewPane.outerHTML;
-        const blob = new Blob([html], { type: 'text/html' });
-        targetURL.value = URL.createObjectURL(blob);
-        targetType.value = 'html';
-        statusMessage.value = "RawHTML 生成完成！";
-        status.value = 2
-    } catch (error) {
-        console.error('Error in toRawHTML:', error);
-        window.alert(`输出 RawHTML 时出错了：${error}`);
-    }
+    const html = previewPane.outerHTML
+    const blob = new Blob([html], {type: 'text/html'});
+    target.url = URL.createObjectURL(blob);
+    target.type = 'html';
 }
 
 function toMarkdown() {
-    try {
-        const md = currentFile.value.content;
-        const blob = new Blob([md], { type: 'text/plain' });
-        targetURL.value = URL.createObjectURL(blob);
-        targetType.value = 'md';
-        statusMessage.value = "Markdown 生成完成！";
-        status.value = 2
-    } catch (error) {
-        console.error('Error in toMarkdown:', error);
-        window.alert(`输出 Markdown 时出错了：${error}`);
-    }
+    const md = currentFile.value.content;
+    const blob = new Blob([md], {type: 'text/plain'});
+    target.url = URL.createObjectURL(blob);
+    target.type = 'md';
 }
 
 
@@ -173,7 +114,7 @@ async function copyToClipboard() {
                 // 对于图片和PDF，我们复制二进制数据
                 const response = await fetch(targetURL.value);
                 const blob = await response.blob();
-                const clipboardItem = new ClipboardItem({ [blob.type]: blob });
+                const clipboardItem = new ClipboardItem({[blob.type]: blob});
                 await navigator.clipboard.write([clipboardItem]);
                 break;
 
@@ -187,59 +128,82 @@ async function copyToClipboard() {
                 console.error('未知的 targetType:', targetType.value);
                 break;
         }
-        statusMessage.value = "复制完成！";
+        status.message = "复制完成！";
     } catch (err) {
         console.error('复制数据到剪贴板失败:', err);
-        statusMessage.value = `复制数据到剪贴板失败：${err}`;
+        status.message = `复制数据到剪贴板失败：${err}`;
     }
 }
 
 const buttongroup = [
     {
-				name: 'PDF',
-				action: toPDF
-		},
-		{
-				name: 'HTML',
-				action: toHTML
-		},
-		{
-				name: 'RawHTML',
-				action: toRawHTML
-		},
-		{
-				name: 'Markdown',
-				action: toMarkdown
-		},
-		{
-				name: 'JPG',
-				action: toJPG
-		},
+        name: 'PDF',
+        action: toPDF
+    },
+    {
+        name: 'HTML',
+        action: toHTML
+    },
+    // {
+    //     name: 'RawHTML',
+    //     action: toRawHTML
+    // },
+    {
+        name: 'Markdown',
+        action: toMarkdown
+    },
+    {
+        name: 'JPG',
+        action: toJPG
+    },
 ]
+
+function generate(button) {
+    status.message = `正在生成${button.name}...`
+    status.type = 'info'
+
+    try {
+        button.action()
+    } catch (error) {
+        status.message = `生成${button.name}时出错了：${error}`
+        status.type = 'error'
+    } finally {
+        status.message = `生成${button.name}完成！`
+        status.type = 'success'
+    }
+}
 
 </script>
 
 <template>
 	<div class="main">
 		<div class="output-pane">
+
 			<!-- Grouped buttons for outputs -->
-
 			<h3>导出为</h3>
-			<ul ul-layout="" class="button-group">
-				<li class="button" v-for="button in buttongroup"  :class="{finished: status===2 && statusMessage.match(button.name)}" :key="button.name" @click="button.action">{{ button.name }}</li>
+			<ul ul-layout class="button-group">
+				<li class="button" v-for="button in buttongroup" :key="button.name"
+				    :class="{finished: status.message.match(button.name)}"
+				    @click="generate(button)">{{ button.name }}
+				</li>
 			</ul>
-			<div class="status" :class="statusClass">{{ statusMessage }}</div>
 
+			<!--	status message	-->
+			<div class="status"
+			     :class="status.type">
+				{{ status.message }}
+			</div>
 
 			<!-- Separator -->
 			<div class="separator"></div>
 
-
-			<div class="button download" :class="{disabled: !targetURL}" @click="download('url', targetURL, fileName + `.${targetType}`)">下载文件</div>
-			<div class="button copy" :class="{disabled: targetType !== 'jpg'}" @click="copyToClipboard">复制到剪贴板（仅图片）</div>
+			<div class="button download" :class="{disabled: !target.url}" @click="download">下载文件</div>
+			<div class="button copy" :class="{disabled: target.type !== 'jpg'}" @click="copyToClipboard">
+				复制到剪贴板（仅图片）
+			</div>
 		</div>
 
-		<PreviewPane :text="currentFile.content"/>
+		<PreviewPane :text="gs.currentFile.content"/>
 	</div>
 </template>
 
@@ -254,7 +218,7 @@ $copy: rgba(213, 51, 213, 0.93);
 	flex-wrap: wrap;
 
 	.button:not(:first-child):not(:last-child) {
-		border-radius: 0;  /* Reset border-radius for middle buttons */
+		border-radius: 0; /* Reset border-radius for middle buttons */
 		border-left: none;
 	}
 
@@ -269,7 +233,8 @@ $copy: rgba(213, 51, 213, 0.93);
 		border-bottom-left-radius: 0;
 		border-left: none;
 	}
-	.button.finished{
+
+	.button.finished {
 		background-color: $theme;
 		color: white;
 	}
@@ -325,41 +290,55 @@ $copy: rgba(213, 51, 213, 0.93);
 
 .main {
 	display: flex;
+}
 
-	.output-pane {
-		flex: 1 1 0;
-		background-color: #f5f5f5;
+.separator {
+	height: 1px;
+	background-color: #ccc;
+	margin: 1rem 0;
+}
 
-		padding: 1rem 3rem;
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		border-right: 1px solid #ccc;
+.status {
+	margin: 1rem 0;
+	height: fit-content;
+	border-radius: 1rem;
+	transition: .2s;
+	padding: .5rem 1rem;
 
-		.separator {
-			height: 1px;
-			background-color: #ccc;
-			margin: 1rem 0;
-		}
-		.status {
-			padding: 0.5rem 1rem;
-			height: fit-content;
-			transition: .2s all;
-			border-radius: 9px;
-			&.initial {
-				background: saturate($theme, 10%)
-			}
-			&.generating {
-				background: $theme;
-			}
-			&.finished {
-				background: desaturate($theme, 10%);
-			}
-		}
+	&.info {
+		background-color: #eee;
+		color: #666;
 	}
 
-	.preview-pane {
-		flex: 1 1 0;
+	&.success {
+		background-color: #d4edda;
+		color: #155724;
 	}
+
+	&.error {
+		background-color: #f8d7da;
+		color: #721c24;
+	}
+
+	&.downloaded {
+		background-color: #d1ecf1;
+		color: #0c5460;
+	}
+}
+
+.output-pane {
+	flex: 1 1 0;
+	background-color: #f5f5f5;
+
+	padding: 1rem 3rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	border-right: 1px solid #ccc;
+	user-select: none;
+}
+
+.preview-pane {
+	flex: 1 1 0;
 }
 </style>
