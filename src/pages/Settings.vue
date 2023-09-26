@@ -1,25 +1,16 @@
 <script setup>
-import { ref } from 'vue';
 import {storeToRefs} from "pinia";
 
-import {useGs} from "../store.js";
-
-import MonacoEditor from "../components/MonacoEditor.vue";
-import DropdownSelector from "../components/DropdownSelector.vue";
-import Input from "../components/Input.vue";
 import localforage from "localforage";
+import {NButton, NInput, NSelect, NCollapse, NCollapseItem} from "naive-ui";
+
+import {useGs} from "../store.js";
+import MonacoEditor from "../components/MonacoEditor.vue";
 
 const gs = useGs(),
     {previewCss, editorSetting} = storeToRefs(gs)
 
-const isCollapsed = ref({
-    edS: true, // editorSetting
-		prS: true, // previewSetting
-		poS: false, // programSetting
-    // Add more sections as needed
-});
-
-const editorSettingsConfig = [
+const es = [
     {
         label: "Automatic Layout",
         type: "dropdown",
@@ -114,137 +105,88 @@ const editorSettingsConfig = [
 
     // ... (其他设置项可以按照类似的格式添加)
 ];
+const om = li => li.map(i => ({label: i, value: i}));
 </script>
 
 <template>
-	<div class="main">
-		<h2 :class="{expanded: !isCollapsed.edS}" @click="isCollapsed.edS ^= 1">
-			编辑器设置
-		</h2>
-		<div v-if="!isCollapsed.edS" class="settings-editor">
-			<div v-for="setting in editorSettingsConfig" :key="setting.label">
-				<h4>{{ setting.label }}</h4>
-				<DropdownSelector v-if="setting.type === 'dropdown'" :options="setting.options" v-model="editorSetting[setting.model]" />
-				<Input v-else-if="setting.type === 'input'" v-model="editorSetting[setting.model]" />
-				<!-- Add other components for different types as needed -->
-			</div>
-		</div>
+	<div class="main" id="main">
+		<NCollapse class="n-collapse"
+		           :default-expanded-names="['p']">
+			<!--	编辑器设置	-->
+			<NCollapseItem title="编辑器设置">
+				<div v-for="setting in es" :key="setting.label">
+					<h4>{{ setting.label }}</h4>
+					<NSelect v-if="setting.type === 'dropdown'"
+					         class="n-select"
+					         v-model:value="editorSetting[setting.model]" :options="om(setting.options)" />
+					<NInput v-else-if="setting.type === 'input'"
+					        v-model:value="editorSetting[setting.model]" type="text" placeholder="" />
+				</div>
+			</NCollapseItem>
 
-		<h2 :class="{expanded: !isCollapsed.prS}" @click="isCollapsed.prS ^= 1">
-			预览区设置
-		</h2>
-		<div v-if="!isCollapsed.prS" class="settings-preview">
-			<h4>选择预设</h4>
-			<DropdownSelector :options="previewCss.preset" v-model="previewCss.presetChoice"/>
+			<!--	预览区设置	-->
+			<NCollapseItem title="预览区设置">
+				<h4>选择预设</h4>
+				<NSelect class="n-select"
+				         v-model:value="previewCss.presetChoice" :options="om(previewCss.preset)" />
 
-			<h4>自定义 CSS</h4>
-			<MonacoEditor class="css-editor" v-model:value="previewCss.css" :language="'css'"/>
-		</div>
+				<h4>自定义 CSS</h4>
+				<MonacoEditor class="css-editor" v-model:value="previewCss.css" :language="'css'"/>
+			</NCollapseItem>
 
-		<h2 :class="{expanded: !isCollapsed.poS}" @click="isCollapsed.poS ^= 1">
-			程序设置
-		</h2>
-		<div v-if="!isCollapsed.poS" class="settings-program">
-			<h4>在编辑器中粘贴图片</h4>
-			<DropdownSelector :options="['off', 'asMarkdown', 'asHTML']" v-model="gs.pasteImage"/>
-		</div>
-		<button class="red" @click="localforage.clear()">清空本地图片</button>
-		<button class="green" @click="gs.$reset">恢复默认设置</button>
+			<!--	程序设置	-->
+			<NCollapseItem title="程序设置" name="p">
+				<h4>在编辑器中粘贴图片</h4>
+				<NSelect class="n-select"
+				         v-model:value="gs.pasteImage" :options="om(['off', 'asMarkdown', 'asHTML'])" />
+				<NButton size="large" class="n-button" type="primary" @click="localforage.clear">清空本地图片</NButton>
+				<NButton size="large" class="n-button" type="warning" @click="gs.$reset">恢复默认设置</NButton>
+			</NCollapseItem>
+		</NCollapse>
 	</div>
 </template>
 
 <style scoped lang="scss">
-/* General Styles */
+$theme: #539cea;
+
 .main {
-	color: #333;
-
-	overflow: auto;
-
-	padding: 0 32px;
+	padding: 32px;
 	background-color: #f5f5f5;
-	border-radius: 5px;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-h2, h3, h4 {
-	user-select: none;
+	overflow: auto;
 }
 
 h4 {
 	margin-bottom: .5rem;
+	user-select: none;
 }
 
-h2{
-	font-size: 1.2rem;
-	cursor: pointer;
-
-	padding: 10px;
+.css-editor {
+	height: 360px;
 	border-radius: 4px;
+}
+
+.n-select{
+	max-width: 200px;
+}
+
+.n-button{
+	display: block;
+	margin-top: 1rem;
+}
+</style>
+
+<style lang="scss">
+/* 这个 class 用于覆盖 Naive UI 的样式。此样式在文中不存在，是由 Naive UI 生成的。*/
+#main .n-collapse-item__header {
+	font-weight: bolder;
+	padding: 10px 0;
+	border-radius: 4px;
+	user-select: none;
 
 	transition: .2s all;
 
 	&:hover {
 		background-color: #e6e6e6;
 	}
-	&::before {
-		content: '▶';
-		display: inline-block;
-		transition: transform 0.2s;
-	}
-	&.expanded::before {
-		transform: rotate(90deg);
-	}
 }
-
-.css-editor {
-	height: 360px;
-}
-
-$theme: #539cea;
-
-button {
-	user-select: none;
-	padding: 0.5rem 1rem;
-	display: block;
-	margin-top: 1rem;
-	background-color: transparent;
-	text-align: center;
-	border-radius: .25rem;
-	transition: .2s;
-	cursor: pointer;
-
-	// 默认按钮颜色
-	$button-color: $theme;
-	color: $button-color;
-	border: 1px solid $button-color;
-
-	&:hover {
-		background-color: $button-color;
-		color: white;
-	}
-	&.red {
-		$button-color: red;
-		color: $button-color;
-		border-color: $button-color;
-
-		&:hover {
-			background-color: $button-color;
-			color: white;
-		}
-	}
-	&.green {
-		$button-color: green;
-		color: $button-color;
-		border-color: $button-color;
-
-		&:hover {
-			background-color: $button-color;
-			color: white;
-		}
-	}
-}
-
-/* Additional styles can be added based on specific components and requirements */
-
 </style>
-

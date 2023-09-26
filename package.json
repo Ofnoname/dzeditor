@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@icon-park/vue-next": "^1.4.2",
+    "@vitejs/plugin-vue-jsx": "^3.0.2",
     "dom-to-image": "^2.6.0",
     "highlight.js": "^11.8.0",
     "html2canvas": "^1.4.1",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.0.0",
+    "naive-ui": "^2.34.4",
     "rollup-plugin-visualizer": "^5.9.2",
     "sass": "^1.63.6",
     "vite": "^4.1.0",

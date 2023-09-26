@@ -1,11 +1,12 @@
 <script setup>
 import {onMounted, reactive, ref} from "vue";
 
+import {NButton, NButtonGroup, NInputNumber, useMessage} from "naive-ui";
+
 import {useGs} from "../store.js";
 import PreviewPane from "../components/PreviewPane.vue";
 
 import domToImage from 'dom-to-image';
-import Input from "../components/Input.vue";
 
 const gs = useGs()
 
@@ -14,10 +15,7 @@ const target = reactive({
     type: '',
 })
 
-const status = reactive({
-    message: "选择一个格式",
-    type: "info",
-})
+const m = useMessage()
 
 let html2canvas, jsPDF
 let previewPane
@@ -32,11 +30,7 @@ onMounted(async () => {
 
         previewPane = document.querySelector('.preview-pane')
     } catch (error) {
-        if (error.message.includes("Failed to fetch")) {
-            status.message = "加载失败，可能是网络原因。";
-        } else {
-            status.message = "加载库时发生错误。";
-        }
+        m.error(`加载库时出错了：${error}`)
     }
 });
 
@@ -47,18 +41,30 @@ function download() {
         a.href = target.url;
         a.download = `${gs.currentFile.title}.${target.type}`;
         a.click();
+
+        m.success(`下载文件完成！`)
     } catch (error) {
-        status.message = `下载时出错了：${error}`;
-        status.type = 'error';
-    } finally {
-        status.message = "下载完成！";
-        status.type = "downloaded";
+       m.error(`下载文件时出错了：${error}`)
+    }
+}
+
+async function copy() {
+    try {
+        const response = await fetch(target.url);
+        const blob = await response.blob();
+        console.log(blob)
+        const clipboardItem = new ClipboardItem({[blob.type]: blob});
+        await navigator.clipboard.write([clipboardItem]);
+
+        m.success(`复制到剪贴板完成！`)
+    } catch (err) {
+        m.error(`复制到剪贴板时出错了：${err}`)
     }
 }
 
 async function toPDF() {
     previewPane.style.overflow = 'visible';
-    const url = await domToImage.toJpeg(previewPane, {
+    const url = await domToImage.toPng(previewPane, {
         bgcolor: 'white',
     })
     previewPane.style.overflow = 'auto';
@@ -74,9 +80,9 @@ async function toPDF() {
     target.type = 'pdf';
 }
 
-async function toJPG() {
+async function toPNG() {
     previewPane.style.overflow = 'visible';
-    const url = await domToImage.toJpeg(previewPane, {
+    const url = await domToImage.toPng(previewPane, {
         bgcolor: 'white',
     })
     previewPane.style.overflow = 'auto';
@@ -100,39 +106,10 @@ function toRawHTML() {
 }
 
 function toMarkdown() {
-    const md = currentFile.value.content;
+    const md = gs.currentFile.content;
     const blob = new Blob([md], {type: 'text/plain'});
     target.url = URL.createObjectURL(blob);
     target.type = 'md';
-}
-
-async function copyToClipboard() {
-    try {
-        switch (targetType.value) {
-            case 'jpg':
-            case 'pdf':
-                // 对于图片和PDF，我们复制二进制数据
-                const response = await fetch(targetURL.value);
-                const blob = await response.blob();
-                const clipboardItem = new ClipboardItem({[blob.type]: blob});
-                await navigator.clipboard.write([clipboardItem]);
-                break;
-
-            case 'html':
-            case 'md':
-                // 对于文本数据，我们可以使用更简单的 writeText 方法
-                await navigator.clipboard.writeText(targetURL.value);
-                break;
-
-            default:
-                console.error('未知的 targetType:', targetType.value);
-                break;
-        }
-        status.message = "复制完成！";
-    } catch (err) {
-        console.error('复制数据到剪贴板失败:', err);
-        status.message = `复制数据到剪贴板失败：${err}`;
-    }
 }
 
 const buttongroup = [
@@ -144,36 +121,30 @@ const buttongroup = [
         name: 'HTML',
         action: toHTML
     },
-    // {
-    //     name: 'RawHTML',
-    //     action: toRawHTML
-    // },
+		{
+				name: 'Raw HTML',
+				action: toRawHTML
+		},
     {
         name: 'Markdown',
         action: toMarkdown
     },
     {
-        name: 'JPG',
-        action: toJPG
+        name: 'PNG',
+        action: toPNG
     },
 ]
 
 function generate(button) {
-    status.message = `正在生成${button.name}...`
-    status.type = 'info'
+    m.info(`正在生成${button.name}...`)
 
     try {
         button.action()
+        m.success(`生成${button.name}完成！`)
     } catch (error) {
-        status.message = `生成${button.name}时出错了：${error}`
-        status.type = 'error'
-    } finally {
-        status.message = `生成${button.name}完成！`
-        status.type = 'success'
+        m.error(`生成${button.name}时出错了：${error}`)
     }
 }
-
-const isCollapsed = ref(null)
 </script>
 
 <template>
@@ -182,33 +153,26 @@ const isCollapsed = ref(null)
 
 			<!-- Grouped buttons for outputs -->
 			<h3>导出为</h3>
-			<ul ul-layout class="button-group">
-				<li class="button" v-for="button in buttongroup" :key="button.name"
-				    :class="{finished: status.message.match(button.name)}"
-				    @click="generate(button)">{{ button.name }}
-				</li>
-			</ul>
-
-			<!--	status message	-->
-			<div class="status"
-			     :class="status.type">
-				{{ status.message }}
-			</div>
+			<NButtonGroup>
+				<NButton v-for="button in buttongroup" :key="button.name" ghost
+				         @click="generate(button)">{{ button.name }}
+				</NButton>
+			</NButtonGroup>
 
 			<!-- Separator -->
 			<div class="separator"></div>
 
-			<div class="button download" :class="{disabled: !target.url}" @click="download">下载文件</div>
-			<div class="button copy" :class="{disabled: target.type !== 'jpg'}" @click="copyToClipboard">
-				复制到剪贴板（仅图片）
-			</div>
-			<div v-if="!isCollapsed">
-				<h4>打印宽度</h4>
-				<Input v-model="gs.printWidth" />
-			</div>
+			<NButton :disabled="!target.url" @click="download" type="primary">
+				下载文件
+			</NButton>
+			<NButton secondary :disabled="target.type !== 'jpg'" @click="copy" type="primary">
+				复制图片
+			</NButton>
+
+			<h4>打印宽度</h4>
+			<NInputNumber class="n-i" v-model:value="gs.printWidth" :step="100" :min="0" :max="3000" />
+
 		</div>
-
-
 		<PreviewPane :style="{width: gs.printWidth + 'px'}" :text="gs.currentFile.content"/>
 	</div>
 </template>
@@ -216,83 +180,6 @@ const isCollapsed = ref(null)
 
 <style scoped lang="scss">
 $theme: #539cea;
-$download: #0ecb0e;
-$copy: rgba(213, 51, 213, 0.93);
-
-.button-group {
-	display: flex;
-	flex-wrap: wrap;
-
-	.button:not(:first-child):not(:last-child) {
-		border-radius: 0; /* Reset border-radius for middle buttons */
-		border-left: none;
-	}
-
-	.button:first-child {
-		border-top-right-radius: 0;
-		border-bottom-right-radius: 0;
-		border-left: 1px solid $theme;
-	}
-
-	.button:last-child {
-		border-top-left-radius: 0;
-		border-bottom-left-radius: 0;
-		border-left: none;
-	}
-
-	.button.finished {
-		background-color: $theme;
-		color: white;
-	}
-}
-
-.button {
-	padding: 0.5rem 1rem;
-	display: inline-block;
-	background-color: transparent;
-	text-align: center;
-	border-radius: .25rem;
-	transition: .2s;
-	cursor: pointer;
-
-	// 默认按钮颜色
-	$button-color: $theme;
-	color: $button-color;
-	border: 1px solid $button-color;
-
-	&:hover {
-		background-color: $button-color;
-		color: white;
-	}
-
-	&.copy {
-		$button-color: $copy; // 为 .copy 重写局部变量
-		color: $button-color;
-		border-color: $button-color;
-
-		&:hover {
-			background-color: $button-color;
-			color: white;
-		}
-	}
-
-	&.download {
-		$button-color: $download; // 为 .download 重写局部变量
-		color: $button-color;
-		border-color: $button-color;
-
-		&:hover {
-			background-color: $button-color;
-			color: white;
-		}
-	}
-
-	&.disabled {
-		pointer-events: none;
-		opacity: 0.5;
-	}
-}
-
 
 .main {
 	display: flex;
@@ -302,34 +189,6 @@ $copy: rgba(213, 51, 213, 0.93);
 	height: 1px;
 	background-color: #ccc;
 	margin: 1rem 0;
-}
-
-.status {
-	margin: 1rem 0;
-	height: fit-content;
-	border-radius: 1rem;
-	transition: .2s;
-	padding: .5rem 1rem;
-
-	&.info {
-		background-color: #eee;
-		color: #666;
-	}
-
-	&.success {
-		background-color: #d4edda;
-		color: #155724;
-	}
-
-	&.error {
-		background-color: #f8d7da;
-		color: #721c24;
-	}
-
-	&.downloaded {
-		background-color: #d1ecf1;
-		color: #0c5460;
-	}
 }
 
 .output-pane {
@@ -346,5 +205,9 @@ $copy: rgba(213, 51, 213, 0.93);
 
 .preview-pane {
 	max-width: 3000px;
+}
+
+.n-i {
+	width: 200px;
 }
 </style>
