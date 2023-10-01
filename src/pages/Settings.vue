@@ -109,46 +109,42 @@ const om = li => li.map(i => ({label: i, value: i}));
 </script>
 
 <template>
-	<div class="main" id="main">
-		<NCollapse class="n-collapse"
-		           :default-expanded-names="['p']">
-			<!--	编辑器设置	-->
-			<NCollapseItem title="编辑器设置">
-				<div v-for="setting in es" :key="setting.label">
-					<h4>{{ setting.label }}</h4>
-					<NSelect v-if="setting.type === 'dropdown'"
-					         class="n-select"
-					         v-model:value="editorSetting[setting.model]" :options="om(setting.options)" />
-					<NInput v-else-if="setting.type === 'input'"
-					        v-model:value="editorSetting[setting.model]" type="text" placeholder="" />
-				</div>
-			</NCollapseItem>
+<NCollapse class="n-collapse main" id="main"
+           :default-expanded-names="['p']">
+	<!--	编辑器设置	-->
+	<NCollapseItem title="编辑器设置">
+		<div v-for="setting in es" :key="setting.label">
+			<h4>{{ setting.label }}</h4>
+			<NSelect v-if="setting.type === 'dropdown'"
+			         class="n-select"
+			         v-model:value="editorSetting[setting.model]" :options="om(setting.options)" />
+			<NInput v-else-if="setting.type === 'input'"
+			        v-model:value="editorSetting[setting.model]" type="text" placeholder="" />
+		</div>
+	</NCollapseItem>
 
-			<!--	预览区设置	-->
-			<NCollapseItem title="预览区设置">
-				<h4>选择预设</h4>
-				<NSelect class="n-select"
-				         v-model:value="previewCss.presetChoice" :options="om(previewCss.preset)" />
+	<!--	预览区设置	-->
+	<NCollapseItem title="预览区设置">
+		<h4>选择预设</h4>
+		<NSelect class="n-select"
+		         v-model:value="previewCss.presetChoice" :options="om(previewCss.preset)" />
 
-				<h4>自定义 CSS</h4>
-				<MonacoEditor class="css-editor" v-model:value="previewCss.css" :language="'css'"/>
-			</NCollapseItem>
+		<h4>自定义 CSS</h4>
+		<MonacoEditor class="css-editor" v-model:text="previewCss.css" :language="'css'"/>
+	</NCollapseItem>
 
-			<!--	程序设置	-->
-			<NCollapseItem title="程序设置" name="p">
-				<h4>在编辑器中粘贴图片</h4>
-				<NSelect class="n-select"
-				         v-model:value="gs.pasteImage" :options="om(['off', 'asMarkdown', 'asHTML'])" />
-				<NButton size="large" class="n-button" type="primary" @click="localforage.clear">清空本地图片</NButton>
-				<NButton size="large" class="n-button" type="warning" @click="gs.$reset">恢复默认设置</NButton>
-			</NCollapseItem>
-		</NCollapse>
-	</div>
+	<!--	程序设置	-->
+	<NCollapseItem title="程序设置" name="p">
+		<h4>在编辑器中粘贴图片</h4>
+		<NSelect class="n-select"
+		         v-model:value="gs.pasteImage" :options="om(['off', 'asMarkdown', 'asHTML'])" />
+		<NButton size="large" class="n-button" type="primary" @click="localforage.clear">清空本地图片</NButton>
+		<NButton size="large" class="n-button" type="warning" @click="gs.$reset">恢复默认设置</NButton>
+	</NCollapseItem>
+</NCollapse>
 </template>
 
 <style scoped lang="scss">
-$theme: #539cea;
-
 .main {
 	padding: 32px;
 	background-color: #f5f5f5;

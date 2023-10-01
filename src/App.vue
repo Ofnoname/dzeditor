@@ -1,66 +1,24 @@
 <template>
-	<NConfigProvider :theme-overrides="themeOverrides">
-	<NMessageProvider>
-	<div id="app">
-		<section class="sidebar">
-<!--			<RouterLink :to="page.route" active-class="active"-->
-<!--			            v-for="(page, idx) in pages" :key="idx"-->
-<!--			            class="sidebar-option" />-->
-<!--				<component :is="page.icon" class="icon"/>-->
-<!--				{{ page.name }}-->
-<!--			</RouterLink>-->
-<!--				:collapsed="collapsed"-->
-			<NMenu
-				collapsed
-				collapsed-width="48"
-				:options="menuOptions"
-			/>
-		</section>
-		<RouterView class="main"/>
-	</div>
-	</NMessageProvider>
-	</NConfigProvider>
+<NConfigProvider :theme-overrides="theme">
+<NMessageProvider>
+<div id="app">
+	<Menu class="sidebar"/>
+	<RouterView class="main"/>
+</div>
+</NMessageProvider>
+</NConfigProvider>
 </template>
 
-<script setup lang="jsx">
-import {watch, ref, h} from "vue";
-import {RouterLink, RouterView} from "vue-router";
+<script setup>
+import {onMounted} from "vue";
+import {RouterView} from "vue-router";
 
-import {NMessageProvider, NConfigProvider, NMenu, NIcon, darkTheme} from "naive-ui";
+import {NMessageProvider, NConfigProvider, darkTheme} from "naive-ui";
 
-import {
-    AlignTextLeft as IconAlignTextLeft,
-    Download as IconDownload,
-    Info as IconInfo,
-    Setting as IconSetting
-} from "@icon-park/vue-next";
+import Menu from "./components/Menu.vue";
+import {usePreview} from "./util/preview.js";
 
-import {useGs} from "./store.js";
-
-const gs = useGs()
-
-function renderIcon (icon) {
-    return () => h(NIcon, null, { default: () => h(icon) })
-}
-
-function renderMenuItem (item) {
-		return () => <RouterLink to={item.route}>{item.name}</RouterLink>
-}
-
-const pages = [
-    {name: '编辑', icon: IconAlignTextLeft, route: "/editor"},
-    {name: '设置', icon: IconSetting, route: "/settings"},
-    {name: '输出', icon: IconDownload, route: "/download"},
-    {name: '关于', icon: IconInfo, route: "/about"}
-];
-
-const menuOptions = ref(pages.map(page => ({
-		label: renderMenuItem(page),
-		icon: renderIcon(page.icon),
-		key: page.route,
-})));
-
-const themeOverrides = {
+const theme = {
     common: {
         primaryColor: '#539cea',
         primaryColorHover: '#8bbcf0',
@@ -69,18 +27,14 @@ const themeOverrides = {
     },
 }
 
-/* 将 gs.previewCss.css 的样式文本同步到页面 */
-watch(() => gs.previewCss.css, (value) => {
-    const dynamicStyle = document.getElementById('dynamic-style')
-    dynamicStyle.innerHTML = value
-}, {immediate: true});
+usePreview()
 
-/* 当选择预设时，fetch 预设样式 */
-watch(() => gs.previewCss.presetChoice, async (value) => {
-    const fileName = `preset-${value}.css`
-    const response = await fetch(fileName)
-    gs.previewCss.css = await response.text()
-}, {immediate: true});
+onMounted(() => {
+    if ('serviceWorker' in navigator && 'localStorage' in window) {}
+    else {
+        window.alert("您的浏览器不支持 Service Worker 或者 localStorage，无法使用本地粘贴图片功能。")
+    }
+})
 </script>
 
 <style scoped lang="scss">
@@ -91,10 +45,7 @@ watch(() => gs.previewCss.presetChoice, async (value) => {
 }
 
 .sidebar {
-	width: 48px;
-	height: 100vh;
-	background-color: #e0e0e0;
-	user-select: none;
+	width: 3rem;
 }
 
 .main {

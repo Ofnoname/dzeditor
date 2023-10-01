@@ -21,13 +21,14 @@
     "marked-highlight": "^2.0.5",
     "marked-katex-extension": "^3.0.4",
     "monaco-editor": "^0.40.0",
+    "naive-ui": "^2.34.4",
     "pinia": "^2.1.4",
+    "uuid": "^9.0.1",
     "vue": "^3.2.45",
     "vue-router": "^4.2.4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.0.0",
-    "naive-ui": "^2.34.4",
     "rollup-plugin-visualizer": "^5.9.2",
     "sass": "^1.63.6",
     "vite": "^4.1.0",

@@ -1,11 +1,11 @@
 import {defineStore} from 'pinia'
+import { v4 as uuid_v4 } from 'uuid';
 
-// 持久化 pinia
 export function saveState(key, state) {
     localStorage.setItem(key, JSON.stringify(state));
 }
 
-export function loadState(key) {
+function loadState(key) {
     try {
         return JSON.parse(localStorage.getItem(key));
     } catch (err) {
@@ -14,25 +14,90 @@ export function loadState(key) {
 }
 
 class TextFile {
-    constructor(sign, content) {
-        this.sign = sign
+    constructor(content) {
+        this.sign = uuid_v4()
         this.title = '未命名'
         this.content = content ?? ''
     }
 }
 
+const fileActions = {
+
+newFile(content) {
+    const newFile = new TextFile(content)
+    this.fileList.push(newFile)
+    this.currentFile = newFile
+},
+
+openFile() {
+    // 打开文件选择框
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = "text/plain, .md";
+
+    input.onchange = e => {
+        const file = e.target.files[0]
+        // 读取文件内容
+        const reader = new FileReader()
+        reader.readAsText(file)
+        reader.onload = e => {
+            this.newFile(e.target.result)
+        }
+    }
+    input.click()
+    input.remove()
+},
+
+switchFile(index) {
+    this.currentFile = this.fileList[index]
+},
+
+updateCurrentTitle(title) {
+    this.currentFile.title = title
+},
+
+removeFile(index) {
+    if (this.fileList[index] === this.currentFile) {
+        this.currentFile = this.fileList[index - 1] || this.fileList[index + 1]
+    }
+    this.fileList.splice(index, 1)
+},
+
+removeCurrentFile() {
+    const index = this.fileList.indexOf(this.currentFile)
+    this.removeFile(index)
+}}
+
+const actions = {
+switchPreviewMode() {
+    this.previewMode = (this.previewMode + 1) % 3
+}
+}
+
 export const useGs = defineStore('globalStore', {
     state: () => ({
         currentFile: null,
-        fileAutoInc: 1000,
         fileList: [],
 
-        previewMode: 1, // 0: 编辑，1: 分屏，2: 预览
+        /*
+        *  0: 编辑，1: 分屏，2: 预览
+        * */
+        previewMode: 1,
+
+        /*
+        * css: 预览区的样式文本
+        * preset: 预设样式列表
+        * presetChoice: 当前选择的预设样式
+        *  */
         previewCss: {
             css: '',
             preset: ['rightblue'],
             presetChoice: 'rightblue',
         },
+
+        /*
+         * 直接传入各库的设置
+         */
         editorSetting: {
 
             overviewRulerBorder: false, // 不要滚动条的边框
@@ -78,49 +143,13 @@ export const useGs = defineStore('globalStore', {
         * */
         pasteImage: "asMarkdown",
 
-        /*
-        * 打印宽度
-        * */
+        /* 打印宽度 */
         printWidth: 1000,
 
         ...loadState('globalStore'),
     }),
     actions: {
-        newFile(content) {
-            const newFile = new TextFile(this.fileAutoInc++, content)
-            this.fileList.push(newFile)
-            this.currentFile = newFile
-        },
-        openFile() {
-            // 打开文件选择框
-            const input = document.createElement('input')
-            input.type = 'file'
-            input.accept = "text/plain, .md";
-
-            input.onchange = e => {
-                const file = e.target.files[0]
-                // 读取文件内容
-                const reader = new FileReader()
-                reader.readAsText(file)
-                reader.onload = e => {
-                    this.newFile(e.target.result)
-                }
-            }
-            input.click()
-            input.remove()
-        },
-        switchFile(index) {
-            this.currentFile = this.fileList[index]
-        },
-        removeFile(index) {
-            if (this.fileList[index] === this.currentFile) {
-                this.currentFile = this.fileList[index - 1] || this.fileList[index + 1]
-            }
-            this.fileList.splice(index, 1)
-        },
-        removeCurrentFile() {
-            const index = this.fileList.indexOf(this.currentFile)
-            this.removeFile(index)
-        }
+        ...actions,
+        ...fileActions,
     }
 })

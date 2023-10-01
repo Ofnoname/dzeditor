@@ -1,14 +1,8 @@
 <script setup>
 import {computed} from "vue";
-import {storeToRefs} from "pinia";
-
-import {marked} from "marked";
-import {markedHighlight} from "marked-highlight";
-import markedKatex from "marked-katex-extension";
-import hljs from "highlight.js";
-import "highlight.js/styles/default.css"
 
 import {useGs} from "../store.js";
+import {useMarked} from "../util/marked.js";
 
 const props = defineProps({
 		text: {
@@ -18,40 +12,15 @@ const props = defineProps({
 })
 
 const gs = useGs()
-const {markedSetting} = storeToRefs(gs)
+const marked = useMarked()
 
-marked.use(markedHighlight({
-    langPrefix: 'hljs language-',
-    highlight(code, lang) {
-        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-        return hljs.highlight(code, { language }).value;
-    }
-}))
-
-marked.use(markedKatex({
-		throwOnError: false,
-		errorColor: '#cc0000',
-		delimiters: [
-				{left: "$$", right: "$$", display: true},
-				{left: "$", right: "$", display: false},
-				{left: "\\[", right: "\\]", display: true},
-				{left: "\\(", right: "\\)", display: false},
-		],
-}))
-
-marked.setOptions({
-		...markedSetting.value,
-		headerIds: false,
-		mangle: false,
-})
-
-const previewText = computed(() => {
-    return props.text ? marked.parse(props.text, markedSetting.value) : ''
+const p = computed(() => {
+    return props.text ? marked.parse(props.text, gs.markedSetting) : ''
 })
 </script>
 
 <template>
-	<div class="preview-pane" v-html="previewText"></div>
+<div class="preview-pane" v-html="p"></div>
 </template>
 
 <style scoped lang="scss">

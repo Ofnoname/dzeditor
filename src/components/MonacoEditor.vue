@@ -1,11 +1,12 @@
 <template>
-	<div ref="editor" class="monaco-editor"></div>
+<div ref="editor" class="monaco-editor"></div>
 </template>
 
 <script setup>
 import {ref, onMounted, onBeforeUnmount, watch, computed} from 'vue'
 import * as monaco from 'monaco-editor'
 import {useGs} from "../store.js";
+import {usePasteImage} from "../util/pasteImage.js";
 
 const editor = ref(null);
 
@@ -37,9 +38,12 @@ onMounted(() => {
         }
     });
 
+    emits('updated', {
+        wordCount: computed(() => monacoEditor.getValue().length),
+        cursorPosition: computed(() => monacoEditor.getPosition()),
+    })
     monacoEditor.onDidChangeCursorPosition(e => {
 				emits('updated', {
-            monaco: computed(() => monacoEditor),
             wordCount: computed(() => monacoEditor.getValue().length),
             cursorPosition: computed(() => monacoEditor.getPosition()),
         })
@@ -53,7 +57,9 @@ onMounted(() => {
 
     window.addEventListener('resize', onResize);
     watch(() => gs.previewMode, onResize)
+		usePasteImage(monacoEditor)
 });
+
 
 onBeforeUnmount(() => {
     monacoEditor.dispose()
