@@ -1,0 +1,110 @@
+@charset "UTF-8";
+.preview-pane {
+  /* .preview-pane 即文章的顶级元素 */
+  font-size: 16px;
+  font-family: sans-serif;
+  word-break: break-all;
+  padding: 1rem 3rem;
+  --theme: #b399ff;
+  --theme-revert: #ef8b34;
+  --table-head: #c2a3ea;
+  --table: #eae0f8;
+  --quote: #dcf6fb;
+  --white-background: #f8f8f8;
+  --black-font: #333;
+  --code-monospace: "Consolas", "Lucida Console", "Courier New", "Monaco", monospace;
+  --title: "Arial", serif;
+  color: var(--black-font);
+  background-color: var(--white-background);
+}
+.preview-pane a {
+  text-decoration: none;
+  color: var(--theme);
+  transition: 0.2s;
+}
+.preview-pane a:hover {
+  color: var(--theme-revert);
+}
+.preview-pane p {
+  line-height: 1.8;
+  margin: 1.4rem 0;
+}
+.preview-pane li {
+  line-height: 1.8;
+}
+.preview-pane h1 {
+  text-align: center;
+  font-family: var(--title);
+}
+.preview-pane h1::after {
+  content: "";
+  display: block;
+  background-color: #ccc;
+  height: 1px;
+  margin: 1rem;
+}
+.preview-pane h2:before {
+  content: "#";
+  color: var(--theme);
+  margin-right: 0.5rem;
+  margin-left: -1.5rem;
+}
+.preview-pane h3:before {
+  content: "|";
+  color: var(--theme);
+  margin-right: 0.5rem;
+}
+.preview-pane hr {
+  margin: 1rem 0;
+}
+.preview-pane table {
+  margin: 1rem auto;
+  border-collapse: collapse;
+}
+.preview-pane th, .preview-pane td {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--black-font);
+}
+.preview-pane th {
+  background-color: var(--table-head);
+}
+.preview-pane td {
+  background-color: var(--table);
+}
+.preview-pane code {
+  font: 1.1rem var(--code-monospace);
+  background-color: transparent;
+  padding: 0;
+}
+.preview-pane :not(pre) code {
+  color: var(--theme);
+}
+.preview-pane pre code {
+  line-height: 1.8em;
+}
+.preview-pane img {
+  margin: 1rem auto;
+  display: block;
+  max-width: 80%;
+  border-radius: 0.25rem;
+  box-shadow: 0 0 3px #aaa;
+  transition: 0.2s;
+}
+.preview-pane img:hover {
+  box-shadow: 0 0 8px #555;
+}
+.preview-pane blockquote {
+  background: linear-gradient(to bottom right, var(--quote), transparent);
+  padding: 0.5rem 1rem;
+  border-radius: 0 1rem 1rem 0;
+  margin: 1rem 0;
+  position: relative;
+  border-left: 0.5rem solid var(--theme);
+  color: #666;
+}
+.preview-pane ol, .preview-pane ul {
+  margin-left: 1rem;
+  padding-left: 0;
+}
+
+/*# sourceMappingURL=preset-rightblue.css.map */

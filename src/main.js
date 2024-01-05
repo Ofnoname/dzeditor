@@ -1,28 +1,29 @@
 import { createApp } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
+import {createRouter, createWebHashHistory, createWebHistory} from 'vue-router'
 import { createPinia } from 'pinia'
 
 import '@icon-park/vue-next/styles/index.css';
 
 import App from './App.vue'
-import Editor from "./pages/Editor.vue";
-import Settings from "./pages/Settings.vue";
-import Download from "./pages/Download.vue";
-import About from "./pages/About.vue";
+// import Editor from "./pages/Editor.vue";
+// import Settings from "./pages/Settings.vue";
+// import Download from "./pages/Download.vue";
+// import About from "./pages/About.vue";
 import {saveState, useGs} from "./store.js";
 
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
+import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
 
 /* 路由 */
 const router = createRouter({
     history: createWebHistory(),
     base: '/dzeditor',
     routes: [
-        { path: '', component: Editor},
-        { path: '/editor', component: Editor},
-        { path: '/settings', component: Settings},
-        { path: '/download', component: Download},
-        { path: '/about', component: About},
+        { path: '', component: () => import("./pages/Editor.vue")},
+        { path: '/editor', component: () => import("./pages/Editor.vue")},
+        { path: '/settings', component: () => import("./pages/Settings.vue")},
+        { path: '/download', component: () => import("./pages/Download.vue")},
+        { path: '/about', component: () => import("./pages/About.vue")},
     ]
 })
 
@@ -44,7 +45,7 @@ gs.$subscribe((mutation, state) => {
 
 /* 注册 Service Worker */
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/serviceWorker.js')
+    navigator.serviceWorker.register('serviceWorker.js')
         .then(() => {
             console.log('Service Worker registered.');
         }).catch(error => {
@@ -58,6 +59,9 @@ if ('serviceWorker' in navigator) {
  * From https://github.com/vitejs/vite/discussions/1791 */
 window.MonacoEnvironment = {
     getWorker(_, label) {
+        if (label === 'css') {
+            return new cssWorker()
+        }
         return new editorWorker()
     }
 }

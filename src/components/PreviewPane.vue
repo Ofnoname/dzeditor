@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref, watchEffect} from "vue";
 
 import {useGs} from "../store.js";
 import {useMarked} from "../util/marked.js";
@@ -15,6 +15,7 @@ const gs = useGs()
 const marked = useMarked()
 
 const p = computed(() => {
+    marked.loading.value;
     return props.text ? marked.parse(props.text, gs.markedSetting) : ''
 })
 </script>

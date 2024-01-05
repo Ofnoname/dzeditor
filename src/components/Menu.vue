@@ -4,7 +4,7 @@ import {
     AlignTextLeft as IconAlignTextLeft,
     Download as IconDownload, Info as IconInfo,
     Setting as IconSetting
-} from "@icon-park/vue-next/lib/map.js";
+} from "@icon-park/vue-next";
 
 const pages = [
     {name: '编辑', icon: IconAlignTextLeft, route: "/editor"},

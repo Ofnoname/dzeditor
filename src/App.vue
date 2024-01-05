@@ -1,9 +1,13 @@
 <template>
-<NConfigProvider :theme-overrides="theme">
+<NConfigProvider :theme-overrides="theme" preflight-style-disabled>
 <NMessageProvider>
 <div id="app">
 	<Menu class="sidebar"/>
-	<RouterView class="main"/>
+	<RouterView v-slot="{ Component }">
+		<KeepAlive>
+			<component :is="Component" />
+		</KeepAlive>
+	</RouterView>
 </div>
 </NMessageProvider>
 </NConfigProvider>

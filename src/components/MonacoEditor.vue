@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onBeforeUnmount, watch, computed} from 'vue'
+import {ref, onMounted, onBeforeUnmount, watch, computed, watchEffect} from 'vue'
 import * as monaco from 'monaco-editor'
 import {useGs} from "../store.js";
 import {usePasteImage} from "../util/pasteImage.js";
@@ -54,6 +54,11 @@ onMounted(() => {
             textModel.setValue(newValue);
         }
     })
+
+		watchEffect( () => {
+        if (props.options)
+					monacoEditor.updateOptions(props.options)
+		})
 
     window.addEventListener('resize', onResize);
     watch(() => gs.previewMode, onResize)

@@ -24,13 +24,10 @@ async function pasteImage(dataURL) {
 }
 
 async function h(event) {
-    console.log('paste', event);
-    event.preventDefault();
     const items = (event.clipboardData || event.originalEvent.clipboardData).items;
     for (const index in items) {
         const item = items[index];
         if (item.kind === 'file' && item.type.indexOf('image') !== -1) {
-            console.log('image', item);
             const blob = item.getAsFile();
             const reader = new FileReader();
             reader.onload = async (event) => {
